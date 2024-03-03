@@ -27,6 +27,8 @@ AInkPlayerCharacter::AInkPlayerCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+
+	bIsShooting = false;
 }
 
 void AInkPlayerCharacter::Move(const FInputActionValue& Value)
@@ -71,12 +73,18 @@ void AInkPlayerCharacter::Shoot(const FInputActionValue& Value)
 
 	FVector SpawnLocation = GetActorLocation();
 	GetWorld()->SpawnActor<AActor>(BulletBlueprint, SpawnLocation, NewRotation);
-	
-	NewRotation.Pitch = 0.0f;
-	NewRotation.Roll = 0.0f;
-	SetActorRotation(NewRotation);
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 1800.0f, 00.0f);
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetCharacterMovement()->bUseControllerDesiredRotation = true;
+	bIsShooting = true;
+}
 
-	
+void AInkPlayerCharacter::ResetValues()
+{
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 360.0f, 0.0f);
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->bUseControllerDesiredRotation = false;
+	bIsShooting = false;
 }
 
 // Called when the game starts or when spawned
@@ -114,6 +122,6 @@ void AInkPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 		//Shooting
 		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AInkPlayerCharacter::Shoot);
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Completed, this, &AInkPlayerCharacter::ResetValues);
 	}
 }
-

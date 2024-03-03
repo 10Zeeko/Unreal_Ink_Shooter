@@ -39,6 +39,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet")
 	TSubclassOf<class AActor> BulletBlueprint;
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	bool bIsShooting;
 
 	virtual void Tick(float DeltaTime) override;
 	
@@ -56,7 +59,8 @@ protected:
 
 	/** Called for shooting input */
 	void Shoot(const FInputActionValue& Value);
-	
+	void ResetValues();
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 };
