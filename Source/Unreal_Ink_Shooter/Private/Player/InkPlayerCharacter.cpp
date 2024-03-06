@@ -8,6 +8,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "InkBullets.h"
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
@@ -72,7 +73,7 @@ void AInkPlayerCharacter::Shoot(const FInputActionValue& Value)
 	FRotator NewRotation = UKismetMathLibrary::MakeRotFromX(CameraForwardVector);
 
 	FVector SpawnLocation = GetActorLocation();
-	GetWorld()->SpawnActor<AActor>(BulletBlueprint, SpawnLocation, NewRotation);
+	GetWorld()->SpawnActor<AInkBullets>(InkBullet, SpawnLocation, NewRotation);
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 1800.0f, 00.0f);
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->bUseControllerDesiredRotation = true;

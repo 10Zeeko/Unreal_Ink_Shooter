@@ -7,6 +7,15 @@
 #include "InputActionValue.h"
 #include "InkPlayerCharacter.generated.h"
 
+UENUM(BlueprintType)
+enum class ETeam
+{
+	NONE = 0 UMETA(DisplayName = "None"),
+	TEAM1 UMETA(DisplayName = "Team 1"),
+	TEAM2 UMETA(DisplayName = "Team 2"),
+	TEAM3 UMETA(DisplayName = "Team 3")
+};
+
 UCLASS()
 class UNREAL_INK_SHOOTER_API AInkPlayerCharacter : public ACharacter
 {
@@ -36,9 +45,14 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* ShootAction;
-	
+
+	// Ink Bullet blueprint
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet")
-	TSubclassOf<class AActor> BulletBlueprint;
+	TSubclassOf<class AInkBullets> InkBullet;
+
+	// Team of the player
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	ETeam playerTeam {ETeam::NONE};
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	bool bIsShooting;
