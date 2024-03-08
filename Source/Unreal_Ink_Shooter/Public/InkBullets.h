@@ -21,17 +21,21 @@ public:
 	UStaticMeshComponent* apSphereComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UProjectileMovementComponent* apProjectileMovementComponent;
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UArrowComponent* apArrowForward;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float mPaintSize {0.1f};
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float mDamage {20.0f};
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	ETeam mpOwnerTeam {ETeam::NONE};
+	ETeam mpOwnerTeam {ETeam::TEAM2};
+
+	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void DetectHitInSurface();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 };
