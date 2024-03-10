@@ -25,9 +25,13 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMaterial* apBrushMaterial;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<UTexture2D*> apSplashTextures;
+	
 	UMaterialInstanceDynamic* brushDynMaterial;
 
+	UFUNCTION(BlueprintCallable)
 	virtual void PaintAtPosition(AInkBullets* aInkBullet, FHitResult aHitResult);
 
 	virtual void Tick(float DeltaTime) override;

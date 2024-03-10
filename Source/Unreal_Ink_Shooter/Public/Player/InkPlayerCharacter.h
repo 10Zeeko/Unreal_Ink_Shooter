@@ -56,6 +56,11 @@ public:
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	bool bIsShooting;
+	bool bCanShoot {true};
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float mFireRate {0.2f};
+
+	FTimerHandle mFireRateTimerHandle;
 
 	virtual void Tick(float DeltaTime) override;
 	
@@ -77,4 +82,7 @@ protected:
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+private:
+	void FireRateTimer();
 };

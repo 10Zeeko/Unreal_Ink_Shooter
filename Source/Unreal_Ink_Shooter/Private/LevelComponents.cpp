@@ -22,7 +22,7 @@ void ALevelComponents::BeginPlay()
 	
 	apStaticMesh->SetMaterial(0, InkedSurfaceMaterial);
 
-	inkedSurfaceTexture = UKismetRenderingLibrary::CreateRenderTarget2D(this, 2048, 2048, RTF_RGBA16f);
+	inkedSurfaceTexture = UKismetRenderingLibrary::CreateRenderTarget2D(this, 8192, 8192, RTF_RGBA16f);
 	InkedSurfaceMaterial->SetTextureParameterValue(TEXT("InkedSurface"), inkedSurfaceTexture);
 
 	brushDynMaterial = UMaterialInstanceDynamic::Create(apBrushMaterial, this);
@@ -34,20 +34,24 @@ void ALevelComponents::PaintAtPosition(AInkBullets* aInkBullet, FHitResult aHitR
 	// Find Collision UV
 	UGameplayStatics::FindCollisionUV(aHitResult, 0, UV);
 	FLinearColor color = FLinearColor(UV.X, UV.Y, 0.0f, 0.0f);
+
 	
-	UKismetMaterialLibrary::SetVectorParameterValue(GetWorld(), Cast<UMaterialParameterCollection>(brushDynMaterial), TEXT("BrushPosition"), color);
-	UKismetMaterialLibrary::SetScalarParameterValue(GetWorld(), Cast<UMaterialParameterCollection>(brushDynMaterial), TEXT("BrushSize"), aInkBullet->mPaintSize);
-	UKismetMaterialLibrary::SetScalarParameterValue(GetWorld(), Cast<UMaterialParameterCollection>(brushDynMaterial), TEXT("BrushStrength"), 1.0f);
+	brushDynMaterial->SetVectorParameterValue(TEXT("BrushPosition"), color);
+	brushDynMaterial->SetScalarParameterValue(TEXT("BrushSize"), aInkBullet->mPaintSize);
+	brushDynMaterial->SetScalarParameterValue(TEXT("BrushStrength"), 1.0f);
+
+	// Select random texture for SplashTexture parameter in material
+	brushDynMaterial->SetTextureParameterValue(TEXT("SplashTexture"), apSplashTextures[FMath::RandRange(0, apSplashTextures.Num() - 1)]);
 	
 	if (aInkBullet->mpOwnerTeam == ETeam::TEAM1)
 	{
-		UKismetMaterialLibrary::SetVectorParameterValue(GetWorld(), Cast<UMaterialParameterCollection>(brushDynMaterial), TEXT("BrushColor"), FLinearColor(1.0f, 0.0f, 0.0f, 1.0f));
+		brushDynMaterial->SetVectorParameterValue(TEXT("BrushColor"), FLinearColor(1.0f, 0.0f, 0.0f, 1.0f));
 	}
 	else
 	{
-		UKismetMaterialLibrary::SetVectorParameterValue(GetWorld(), Cast<UMaterialParameterCollection>(brushDynMaterial), TEXT("BrushColor"), FLinearColor(0.0f, 0.0f, 1.0f, 1.0f));
+		brushDynMaterial->SetVectorParameterValue(TEXT("BrushColor"), FLinearColor(0.0f, 0.0f, 1.0f, 1.0f));
 	}
-	UKismetRenderingLibrary::DrawMaterialToRenderTarget(GetWorld(), inkedSurfaceTexture, brushDynMaterial);
+	UKismetRenderingLibrary::DrawMaterialToRenderTarget(this, inkedSurfaceTexture, brushDynMaterial);
 }
 
 // Called every frame

@@ -68,16 +68,22 @@ void AInkPlayerCharacter::Look(const FInputActionValue& Value)
 
 void AInkPlayerCharacter::Shoot(const FInputActionValue& Value)
 {
-	// Rotates the character to the right direction
-	FVector CameraForwardVector = FollowCamera->GetForwardVector();
-	FRotator NewRotation = UKismetMathLibrary::MakeRotFromX(CameraForwardVector);
+	if (bCanShoot)
+	{
+		// Rotates the character to the right direction
+		FVector CameraForwardVector = FollowCamera->GetForwardVector();
+		FRotator NewRotation = UKismetMathLibrary::MakeRotFromX(CameraForwardVector);
 
-	FVector SpawnLocation = GetActorLocation();
-	GetWorld()->SpawnActor<AInkBullets>(InkBullet, SpawnLocation, NewRotation);
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 1800.0f, 00.0f);
-	GetCharacterMovement()->bOrientRotationToMovement = false;
-	GetCharacterMovement()->bUseControllerDesiredRotation = true;
-	bIsShooting = true;
+		FVector SpawnLocation = GetActorLocation();
+		GetWorld()->SpawnActor<AInkBullets>(InkBullet, SpawnLocation, NewRotation);
+		GetCharacterMovement()->RotationRate = FRotator(0.0f, 1800.0f, 00.0f);
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+		GetCharacterMovement()->bUseControllerDesiredRotation = true;
+		bIsShooting = true;
+		bCanShoot = false;
+
+		GetWorld()->GetTimerManager().SetTimer(mFireRateTimerHandle, this, &AInkPlayerCharacter::FireRateTimer, mFireRate, false);
+	}
 }
 
 void AInkPlayerCharacter::ResetValues()
@@ -99,6 +105,11 @@ void AInkPlayerCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+}
+
+void AInkPlayerCharacter::FireRateTimer()
+{
+	bCanShoot = true;
 }
 
 void AInkPlayerCharacter::Tick(float DeltaTime)
