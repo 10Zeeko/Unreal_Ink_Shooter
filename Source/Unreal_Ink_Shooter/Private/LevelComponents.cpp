@@ -30,10 +30,12 @@ void ALevelComponents::BeginPlay()
 
 void ALevelComponents::PaintAtPosition(AInkBullets* aInkBullet, FHitResult aHitResult)
 {
+	if(!IsValid(brushDynMaterial)) return;
+	
 	FVector2D UV(0.f, 0.f);
 	// Find Collision UV
 	UGameplayStatics::FindCollisionUV(aHitResult, 0, UV);
-	FLinearColor color = FLinearColor(UV.X, UV.Y, 0.0f, 0.0f);
+	const FLinearColor color = FLinearColor(UV.X, UV.Y, 0.0f, 0.0f);
 
 	
 	brushDynMaterial->SetVectorParameterValue(TEXT("BrushPosition"), color);

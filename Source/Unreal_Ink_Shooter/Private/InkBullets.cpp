@@ -5,7 +5,6 @@
 
 AInkBullets::AInkBullets()
 {
-	PrimaryActorTick.bCanEverTick = true;
 	apArrowForward = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowForward"));
 	apArrowForward->SetupAttachment(RootComponent);
 
@@ -19,12 +18,6 @@ void AInkBullets::BeginPlay()
 {
 	Super::BeginPlay();
 	
-}
-
-void AInkBullets::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
 
 void AInkBullets::DetectHitInSurface()

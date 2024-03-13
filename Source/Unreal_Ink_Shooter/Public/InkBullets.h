@@ -29,9 +29,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float mDamage {20.0f};
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	ETeam mpOwnerTeam {ETeam::TEAM2};
-
-	virtual void Tick(float DeltaTime) override;
+	ETeam mpOwnerTeam {ETeam::NONE};
 
 	UFUNCTION(BlueprintCallable)
 	virtual void DetectHitInSurface();

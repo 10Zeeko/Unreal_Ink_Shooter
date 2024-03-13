@@ -28,7 +28,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<UTexture2D*> apSplashTextures;
-	
+
+	UPROPERTY()
 	UMaterialInstanceDynamic* brushDynMaterial;
 
 	UFUNCTION(BlueprintCallable)
