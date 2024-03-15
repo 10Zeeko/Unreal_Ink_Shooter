@@ -25,6 +25,8 @@ public:
 	UProjectileMovementComponent* apProjectileMovementComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UArrowComponent* apArrowForward;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UArrowComponent* apArrowDown;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float mPaintSize {0.1f};

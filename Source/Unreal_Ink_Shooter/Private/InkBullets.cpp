@@ -7,6 +7,8 @@ AInkBullets::AInkBullets()
 {
 	apArrowForward = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowForward"));
 	apArrowForward->SetupAttachment(RootComponent);
+	apArrowDown = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowDown"));
+	apArrowDown->SetupAttachment(apArrowForward);
 
 	apSphereComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InkBullets"));
 	apSphereComponent->SetupAttachment(apArrowForward);
@@ -38,7 +40,31 @@ void AInkBullets::DetectHitInSurface()
 		TEXT("Ink"),
 		traceCollisionParams
 	);
+	for (FHitResult& Hit : bulletHit)
+	{
+		if (Hit.bBlockingHit)
+		{
+			// Cast to actor LevelComponents and call PaintAtPosition
+			ALevelComponents* levelComponents = Cast<ALevelComponents>(Hit.GetActor());
 
+			if (levelComponents)
+			{
+				levelComponents->PaintAtPosition(this, Hit);
+				//Destroy(this);
+			}
+		}
+	}
+
+	location = apArrowDown->GetComponentLocation();
+	rotation = apArrowDown->GetForwardVector();
+
+	GetWorld()->LineTraceMultiByProfile(
+		bulletHit,
+		location,
+		location + rotation * 15.0f,
+		TEXT("Ink"),
+		traceCollisionParams
+	);
 	for (FHitResult& Hit : bulletHit)
 	{
 		if (Hit.bBlockingHit)
