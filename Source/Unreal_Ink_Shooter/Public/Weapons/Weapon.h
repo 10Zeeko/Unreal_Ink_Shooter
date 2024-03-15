@@ -1,10 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "WeaponsDataRow.h"
 #include "GameFramework/Actor.h"
+#include "Player/InkPlayerCharacter.h"
 #include "Weapon.generated.h"
 
 UCLASS()
@@ -43,8 +42,19 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=mWEAPON)
 	float mDispersion {0.0f};
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	ETeam playerTeam {ETeam::NONE};
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	bool bIsShooting;
+	bool bCanShoot {true};
+
+	FTimerHandle mFireRateTimerHandle;
 #pragma endregion
+
+	void Shoot(UCameraComponent& FollowCamera, UCharacterMovementComponent* playerCharacterMovement);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+private:
+	void FireRateTimer();
 };

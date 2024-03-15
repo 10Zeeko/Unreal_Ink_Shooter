@@ -1,7 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
-#include "InkBullets.h"
 #include "Engine/DataTable.h"
+#include "InkBullets.h"
 #include "WeaponsDataRow.generated.h"
 
 UENUM(BlueprintType)

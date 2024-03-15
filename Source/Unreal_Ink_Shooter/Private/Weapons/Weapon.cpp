@@ -1,6 +1,8 @@
 #include "Weapons/Weapon.h"
-
+#include "Camera/CameraComponent.h"
 #include "Components/ArrowComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -33,6 +35,31 @@ void AWeapon::SetupPlayerWeapon()
 	mFireRate = aWeapon->FireRate;
 	mDispersion = aWeapon->Dispersion;
 	mBulletBP = aWeapon->BulletBP;
+}
+
+void AWeapon::Shoot(UCameraComponent& FollowCamera, UCharacterMovementComponent* playerCharacterMovement)
+{
+	if (bCanShoot)
+	{
+		// Rotates the character to the right direction
+		FVector CameraForwardVector = FollowCamera.GetForwardVector();
+		FRotator NewRotation = UKismetMathLibrary::MakeRotFromX(CameraForwardVector);
+
+		FVector SpawnLocation = GetActorLocation();
+		GetWorld()->SpawnActor<AInkBullets>(mBulletBP, SpawnLocation, NewRotation);
+		playerCharacterMovement->RotationRate = FRotator(0.0f, 1800.0f, 00.0f);
+		playerCharacterMovement->bOrientRotationToMovement = false;
+		playerCharacterMovement->bUseControllerDesiredRotation = true;
+		bIsShooting = true;
+		bCanShoot = false;
+
+		GetWorld()->GetTimerManager().SetTimer(mFireRateTimerHandle, this, &AWeapon::FireRateTimer, 1 / mFireRate, false);
+	}
+}
+
+void AWeapon::FireRateTimer()
+{
+	bCanShoot = true;
 }
 
 // Called when the game starts or when spawned

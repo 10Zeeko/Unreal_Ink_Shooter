@@ -2,14 +2,12 @@
 
 
 #include "Player/InkPlayerCharacter.h"
-
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "InkBullets.h"
-#include "Kismet/KismetMathLibrary.h"
+#include "Weapons/Weapon.h"
 
 // Sets default values
 AInkPlayerCharacter::AInkPlayerCharacter()
@@ -68,22 +66,8 @@ void AInkPlayerCharacter::Look(const FInputActionValue& Value)
 
 void AInkPlayerCharacter::Shoot(const FInputActionValue& Value)
 {
-	if (bCanShoot)
-	{
-		// Rotates the character to the right direction
-		FVector CameraForwardVector = FollowCamera->GetForwardVector();
-		FRotator NewRotation = UKismetMathLibrary::MakeRotFromX(CameraForwardVector);
-
-		FVector SpawnLocation = GetActorLocation();
-		GetWorld()->SpawnActor<AInkBullets>(InkBullet, SpawnLocation, NewRotation);
-		GetCharacterMovement()->RotationRate = FRotator(0.0f, 1800.0f, 00.0f);
-		GetCharacterMovement()->bOrientRotationToMovement = false;
-		GetCharacterMovement()->bUseControllerDesiredRotation = true;
-		bIsShooting = true;
-		bCanShoot = false;
-
-		GetWorld()->GetTimerManager().SetTimer(mFireRateTimerHandle, this, &AInkPlayerCharacter::FireRateTimer, mFireRate, false);
-	}
+	mCurrentWeapon->Shoot(*FollowCamera, GetCharacterMovement());
+	bIsShooting = true;
 }
 
 void AInkPlayerCharacter::ResetValues()
@@ -105,11 +89,22 @@ void AInkPlayerCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+	if (IsValid(selectedWeapon))
+	{
+		SetupPlayerWeapon();
+	}
 }
 
-void AInkPlayerCharacter::FireRateTimer()
+void AInkPlayerCharacter::SetupPlayerWeapon()
 {
-	bCanShoot = true;
+	// Spawn selectedWeapon actor
+	FActorSpawnParameters spawnParams;
+	spawnParams.Owner = this;
+	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	mCurrentWeapon = GetWorld()->SpawnActor<AWeapon>(selectedWeapon, GetActorLocation(), FRotator(0.0f, 0.0f, 0.0f), spawnParams);
+	// Attach selectedWeapon actor
+	FAttachmentTransformRules attachmentRules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepRelative, EAttachmentRule::KeepWorld, true);
+	mCurrentWeapon->AttachToComponent(GetMesh(), attachmentRules, "WeaponSocket");
 }
 
 void AInkPlayerCharacter::Tick(float DeltaTime)

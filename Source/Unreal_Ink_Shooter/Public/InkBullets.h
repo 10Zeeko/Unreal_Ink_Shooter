@@ -8,6 +8,8 @@
 #include "Player/InkPlayerCharacter.h"
 #include "InkBullets.generated.h"
 
+class AWeapon;
+
 UCLASS()
 class UNREAL_INK_SHOOTER_API AInkBullets : public AActor
 {

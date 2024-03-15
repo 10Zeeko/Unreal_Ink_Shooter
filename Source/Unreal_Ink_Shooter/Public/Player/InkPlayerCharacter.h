@@ -1,11 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "InkPlayerCharacter.generated.h"
+
+class AWeapon;
 
 UENUM(BlueprintType)
 enum class ETeam
@@ -55,12 +55,11 @@ public:
 	ETeam playerTeam {ETeam::NONE};
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	bool bIsShooting;
-	bool bCanShoot {true};
+	TSubclassOf<AWeapon> selectedWeapon;
+	UPROPERTY()
+	AWeapon* mCurrentWeapon;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	float mFireRate {0.2f};
-
-	FTimerHandle mFireRateTimerHandle;
+	bool bIsShooting;
 
 	virtual void Tick(float DeltaTime) override;
 	
@@ -84,5 +83,5 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	void FireRateTimer();
+	void SetupPlayerWeapon();
 };
