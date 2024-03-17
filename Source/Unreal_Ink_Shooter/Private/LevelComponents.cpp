@@ -42,8 +42,10 @@ void ALevelComponents::PaintAtPosition(AInkBullets* aInkBullet, FHitResult aHitR
 	brushDynMaterial->SetScalarParameterValue(TEXT("BrushSize"), aInkBullet->mPaintSize);
 	brushDynMaterial->SetScalarParameterValue(TEXT("BrushStrength"), 1.0f);
 
-	// Select random texture for SplashTexture parameter in material
-	brushDynMaterial->SetTextureParameterValue(TEXT("SplashTexture"), apSplashTextures[FMath::RandRange(0, apSplashTextures.Num() - 1)]);
+	// Select random float number for splash and store it in a variable
+	float splash = FMath::RandRange(0.0f, 100.0f);
+	brushDynMaterial->SetScalarParameterValue(TEXT("Patron"), splash);
+	//brushDynMaterial->SetTextureParameterValue(TEXT("SplashTexture"), apSplashTextures[FMath::RandRange(0, apSplashTextures.Num() - 1)]);
 	
 	if (aInkBullet->mpOwnerTeam == ETeam::TEAM1)
 	{
