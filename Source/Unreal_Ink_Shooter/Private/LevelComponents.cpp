@@ -24,6 +24,7 @@ void ALevelComponents::BeginPlay()
 
 	inkedSurfaceTexture = UKismetRenderingLibrary::CreateRenderTarget2D(this, 8192, 8192, RTF_RGBA16f);
 	InkedSurfaceMaterial->SetTextureParameterValue(TEXT("InkedSurface"), inkedSurfaceTexture);
+	InkedSurfaceMaterial->SetTextureParameterValue(TEXT("NormalTexture"), inkedSurfaceTexture);
 
 	brushDynMaterial = UMaterialInstanceDynamic::Create(apBrushMaterial, this);
 }
