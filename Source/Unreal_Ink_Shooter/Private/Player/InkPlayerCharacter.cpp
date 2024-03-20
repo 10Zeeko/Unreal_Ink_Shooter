@@ -7,6 +7,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "LevelComponents.h"
+#include "Components/ArrowComponent.h"
 #include "Weapons/Weapon.h"
 
 // Sets default values
@@ -26,6 +28,12 @@ AInkPlayerCharacter::AInkPlayerCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+
+	apShipMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShipMesh"));
+	apPlayerMesh = GetMesh();
+	apShipMesh->SetupAttachment(apPlayerMesh);
+	apArrowDown = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowDown"));
+	apArrowDown->SetupAttachment(apPlayerMesh);
 
 	bIsShooting = false;
 }
@@ -78,10 +86,82 @@ void AInkPlayerCharacter::ResetValues()
 	bIsShooting = false;
 }
 
+void AInkPlayerCharacter::EnableSwimming()
+{
+	apPlayerMesh->SetHiddenInGame(true);
+	mCurrentWeapon->PlayerSwimming();
+	apShipMesh->SetHiddenInGame(false);
+	playerState = EPlayer::SWIMMING;
+	GetWorld()->GetTimerManager().SetTimer(mIsInInkTimerHandle, this, &AInkPlayerCharacter::checkIfPlayerIsInInk, 0.1, true);
+}
+
+void AInkPlayerCharacter::DisableSwimming()
+{
+	apPlayerMesh->SetHiddenInGame(false);
+	mCurrentWeapon->PlayerShooting();
+	playerState = EPlayer::IDLE;
+	apShipMesh->SetHiddenInGame(true);
+	GetCharacterMovement()->MaxWalkSpeed = 600.f;
+	GetWorld()->GetTimerManager().ClearTimer(mIsInInkTimerHandle);
+}
+
+void AInkPlayerCharacter::checkIfPlayerIsInInk()
+{
+	if (playerState == EPlayer::SWIMMING)
+	{
+		FVector location = apArrowDown->GetComponentLocation();
+		FVector rotation = apArrowDown->GetForwardVector();
+		FCollisionQueryParams traceCollisionParams = FCollisionQueryParams(FName(TEXT("RV_Trace")), true, this);
+		traceCollisionParams.bTraceComplex = true;
+		traceCollisionParams.bReturnPhysicalMaterial = true;
+		traceCollisionParams.bReturnFaceIndex = true;
+
+		TArray<FHitResult> bulletHit;
+
+		GetWorld()->LineTraceMultiByProfile(
+			bulletHit,
+			location,
+			location + rotation * 15.0f,
+			TEXT("Ink"),
+			traceCollisionParams
+		);
+		for (FHitResult& Hit : bulletHit)
+		{
+			if (Hit.bBlockingHit)
+			{
+				// Cast to actor LevelComponents and call PaintAtPosition
+				ALevelComponents* levelComponents = Cast<ALevelComponents>(Hit.GetActor());
+
+				if (levelComponents)
+				{
+					bIsInInk = levelComponents->CheckInkAtPosition(this, Hit);
+					if (bIsInInk)
+					{
+						GetCharacterMovement()->MaxWalkSpeed = 1200.f;
+						// Move the ship under the ink
+						apShipMesh->SetRelativeLocation(FVector(0.f, 0.f, -100.f));
+					}
+					else
+					{
+						GetCharacterMovement()->MaxWalkSpeed = 300.f;
+						apShipMesh->SetRelativeLocation(FVector(0.f, 0.f, 15.f));
+					}
+				}
+				else
+				{
+					GetCharacterMovement()->MaxWalkSpeed = 300.f;
+					apShipMesh->SetRelativeLocation(FVector(0.f, 0.f, 15.f));
+				}
+			}
+		}
+	}
+}
+
 // Called when the game starts or when spawned
 void AInkPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	apShipMesh->SetHiddenInGame(true);
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
@@ -130,5 +210,9 @@ void AInkPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		//Shooting
 		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AInkPlayerCharacter::Shoot);
 		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Completed, this, &AInkPlayerCharacter::ResetValues);
+
+		//Swimming
+		EnhancedInputComponent->BindAction(SwimAction, ETriggerEvent::Started, this, &AInkPlayerCharacter::EnableSwimming);
+		EnhancedInputComponent->BindAction(SwimAction, ETriggerEvent::Completed, this, &AInkPlayerCharacter::DisableSwimming);
 	}
 }

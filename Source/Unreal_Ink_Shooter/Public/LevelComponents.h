@@ -34,6 +34,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void PaintAtPosition(AInkBullets* aInkBullet, FHitResult aHitResult);
+	UFUNCTION(BlueprintCallable)
+	virtual bool CheckInkAtPosition(AInkPlayerCharacter* aInkPlayer, FHitResult aHitResult);
 
 	virtual void Tick(float DeltaTime) override;
 protected:

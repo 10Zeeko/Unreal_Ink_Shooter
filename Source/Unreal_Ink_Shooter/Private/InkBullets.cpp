@@ -50,7 +50,7 @@ void AInkBullets::DetectHitInSurface()
 			if (levelComponents)
 			{
 				levelComponents->PaintAtPosition(this, Hit);
-				//Destroy(this);
+				Destroy();
 			}
 		}
 	}

@@ -37,6 +37,18 @@ void AWeapon::SetupPlayerWeapon()
 	mBulletBP = aWeapon->BulletBP;
 }
 
+void AWeapon::PlayerSwimming()
+{
+	apWeaponComponent->SetHiddenInGame(true);
+	bCanShoot = false;
+}
+
+void AWeapon::PlayerShooting()
+{
+	apWeaponComponent->SetHiddenInGame(false);
+	bCanShoot = true;
+}
+
 void AWeapon::Shoot(UCameraComponent& FollowCamera, UCharacterMovementComponent* playerCharacterMovement)
 {
 	if (bCanShoot)

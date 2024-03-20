@@ -51,6 +51,9 @@ public:
 	FTimerHandle mFireRateTimerHandle;
 #pragma endregion
 
+	void PlayerSwimming();
+	void PlayerShooting();
+
 	void Shoot(UCameraComponent& FollowCamera, UCharacterMovementComponent* playerCharacterMovement);
 protected:
 	// Called when the game starts or when spawned

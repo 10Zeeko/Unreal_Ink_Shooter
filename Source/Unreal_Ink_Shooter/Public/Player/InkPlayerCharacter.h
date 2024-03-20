@@ -16,6 +16,14 @@ enum class ETeam
 	TEAM3 UMETA(DisplayName = "Team 3")
 };
 
+UENUM()
+enum class EPlayer
+{
+	IDLE UMETA(DisplayName = "Idle"),
+	SHOOTING UMETA(DisplayName = "Shooting"),
+	SWIMMING UMETA(DisplayName = "Swimming")
+};
+
 UCLASS()
 class UNREAL_INK_SHOOTER_API AInkPlayerCharacter : public ACharacter
 {
@@ -45,6 +53,22 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* ShootAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* SwimAction;
+	
+	UPROPERTY()
+	USkeletalMeshComponent* apPlayerMesh;
+
+	// Swim
+	FTimerHandle mIsInInkTimerHandle;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UStaticMeshComponent* apShipMesh;
+	EPlayer playerState {EPlayer::IDLE};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UArrowComponent* apArrowDown;
+	bool bIsInInk {false};
+	bool bLastCheck {true};
 
 	// Ink Bullet blueprint
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet")
@@ -79,6 +103,11 @@ protected:
 	void Shoot(const FInputActionValue& Value);
 	void ResetValues();
 
+	/** Called for swimming **/
+	void EnableSwimming();
+	void DisableSwimming();
+	void checkIfPlayerIsInInk();
+	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 

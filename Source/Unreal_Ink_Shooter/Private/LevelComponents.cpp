@@ -1,9 +1,8 @@
 #include "LevelComponents.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetMaterialLibrary.h"
 #include "Kismet/KismetRenderingLibrary.h"
-#include "Materials/MaterialParameterCollection.h"
+#include "Unreal_Ink_Shooter/Public/Utils.h"
 
 // Sets default values
 ALevelComponents::ALevelComponents()
@@ -22,7 +21,7 @@ void ALevelComponents::BeginPlay()
 	
 	apStaticMesh->SetMaterial(0, InkedSurfaceMaterial);
 
-	inkedSurfaceTexture = UKismetRenderingLibrary::CreateRenderTarget2D(this, 8192, 8192, RTF_RGBA16f);
+	inkedSurfaceTexture = UKismetRenderingLibrary::CreateRenderTarget2D(this, 512, 512, RTF_RGBA16f);
 	InkedSurfaceMaterial->SetTextureParameterValue(TEXT("InkedSurface"), inkedSurfaceTexture);
 	InkedSurfaceMaterial->SetTextureParameterValue(TEXT("NormalTexture"), inkedSurfaceTexture);
 
@@ -57,6 +56,35 @@ void ALevelComponents::PaintAtPosition(AInkBullets* aInkBullet, FHitResult aHitR
 		brushDynMaterial->SetVectorParameterValue(TEXT("BrushColor"), FLinearColor(0.0f, 0.0f, 1.0f, 1.0f));
 	}
 	UKismetRenderingLibrary::DrawMaterialToRenderTarget(this, inkedSurfaceTexture, brushDynMaterial);
+}
+
+bool ALevelComponents::CheckInkAtPosition(AInkPlayerCharacter* aInkPlayer, FHitResult aHitResult)
+{
+	FVector2D UV(0.f, 0.f);
+	// Find Collision UV
+	UGameplayStatics::FindCollisionUV(aHitResult, 0, UV);
+	FLinearColor color = UKismetRenderingLibrary::ReadRenderTargetRawUV(this, inkedSurfaceTexture, UV.X, UV.Y);
+	
+	// Debug string to check what color is there
+	ScreenD(color.ToString());
+	switch (aInkPlayer->playerTeam)
+	{
+		case ETeam::TEAM1:
+			if (color.R >= 0.8f)
+			{
+				return true;
+			}
+			break;
+		case ETeam::TEAM2:
+			if (color.B >= 0.8f)
+			{
+				return true;
+			}
+			break;
+		default:
+			break;
+	}
+	return false;
 }
 
 // Called every frame
