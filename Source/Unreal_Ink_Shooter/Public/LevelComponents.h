@@ -32,6 +32,8 @@ public:
 	UPROPERTY()
 	UMaterialInstanceDynamic* brushDynMaterial;
 
+	void CheckInk();
+	
 	UFUNCTION(BlueprintCallable)
 	virtual void PaintAtPosition(AInkBullets* aInkBullet, FHitResult aHitResult);
 	UFUNCTION(BlueprintCallable)

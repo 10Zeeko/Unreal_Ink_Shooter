@@ -212,7 +212,6 @@ void AInkPlayerCharacter::SwimClimbLineTrace()
 				GetCharacterMovement()->bOrientRotationToMovement = true;
 				bIsClimbing = false;
 			}
-			EMovementMode movementMode = GetCharacterMovement()->GetGroundMovementMode();
 		}
 	}
 }

@@ -28,6 +28,12 @@ void ALevelComponents::BeginPlay()
 	brushDynMaterial = UMaterialInstanceDynamic::Create(apBrushMaterial, this);
 }
 
+void ALevelComponents::CheckInk()
+{
+	if(!IsValid(inkedSurfaceTexture)) return;
+	inkedSurfaceTexture->mip
+}
+
 void ALevelComponents::PaintAtPosition(AInkBullets* aInkBullet, FHitResult aHitResult)
 {
 	if(!IsValid(brushDynMaterial)) return;
