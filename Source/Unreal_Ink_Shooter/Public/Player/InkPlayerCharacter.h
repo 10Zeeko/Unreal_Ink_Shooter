@@ -67,8 +67,11 @@ public:
 	EPlayer playerState {EPlayer::IDLE};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UArrowComponent* apArrowDown;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UArrowComponent* apClimbArrow;
 	bool bIsInInk {false};
 	bool bLastCheck {true};
+	bool bIsClimbing {false};
 
 	// Ink Bullet blueprint
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet")
@@ -107,6 +110,7 @@ protected:
 	void EnableSwimming();
 	void DisableSwimming();
 	void checkIfPlayerIsInInk();
+	void SwimClimbLineTrace();
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

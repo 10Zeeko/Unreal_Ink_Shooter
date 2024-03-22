@@ -9,6 +9,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "LevelComponents.h"
 #include "Components/ArrowComponent.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Unreal_Ink_Shooter/Public/Utils.h"
 #include "Weapons/Weapon.h"
 
 // Sets default values
@@ -34,6 +36,8 @@ AInkPlayerCharacter::AInkPlayerCharacter()
 	apShipMesh->SetupAttachment(apPlayerMesh);
 	apArrowDown = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowDown"));
 	apArrowDown->SetupAttachment(apPlayerMesh);
+	apClimbArrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ClimbArrow"));
+	apClimbArrow->SetupAttachment(apPlayerMesh);
 
 	bIsShooting = false;
 }
@@ -49,13 +53,20 @@ void AInkPlayerCharacter::Move(const FInputActionValue& Value)
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	
+		FVector MoveDirection;
+		if (bIsClimbing)
+		{
+			MoveDirection = UKismetMathLibrary::GetUpVector(YawRotation);
+		}
+		else
+		{
+			MoveDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		}
 		// get right vector 
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 		// add movement 
-		AddMovementInput(ForwardDirection, MovementVector.Y);
+		AddMovementInput(MoveDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
 }
@@ -103,6 +114,9 @@ void AInkPlayerCharacter::DisableSwimming()
 	apShipMesh->SetHiddenInGame(true);
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
 	GetWorld()->GetTimerManager().ClearTimer(mIsInInkTimerHandle);
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	bIsClimbing = false;
 }
 
 void AInkPlayerCharacter::checkIfPlayerIsInInk()
@@ -153,6 +167,52 @@ void AInkPlayerCharacter::checkIfPlayerIsInInk()
 					apShipMesh->SetRelativeLocation(FVector(0.f, 0.f, 15.f));
 				}
 			}
+		}
+	}
+	SwimClimbLineTrace();
+}
+
+void AInkPlayerCharacter::SwimClimbLineTrace()
+{
+	FVector start = apClimbArrow->GetComponentLocation();
+	FVector end = apClimbArrow->GetForwardVector() * 50.f + start;
+	FHitResult hit;
+	FCollisionQueryParams traceCollisionParams = FCollisionQueryParams(FName(TEXT("RV_Trace")), true, this);
+	traceCollisionParams.bTraceComplex = true;
+	traceCollisionParams.bReturnPhysicalMaterial = true;
+	traceCollisionParams.bReturnFaceIndex = true;
+	GetWorld()->LineTraceSingleByChannel(
+			hit,
+			start,
+			end,
+			ECollisionChannel::ECC_Visibility,
+			traceCollisionParams
+		);
+	if (hit.bBlockingHit)
+	{
+		ALevelComponents* levelComponents = Cast<ALevelComponents>(hit.GetActor());
+
+		if (levelComponents)
+		{
+			bIsInInk = levelComponents->CheckInkAtPosition(this, hit);
+			if (bIsInInk)
+			{
+				GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+				GetCharacterMovement()->bOrientRotationToMovement = false;
+				float rot = UKismetMathLibrary::MakeRotFromX(hit.ImpactNormal).Yaw + 180.0f;
+				FRotator newRot = FRotator(GetActorRotation().Pitch, rot, GetActorRotation().Roll);
+				SetActorRotation(newRot);
+				bIsClimbing = true;
+				EMovementMode movementMode = GetCharacterMovement()->GetGroundMovementMode();
+				ScreenD(movementMode == EMovementMode::MOVE_Flying ? "Flying" : "Walking");
+			}
+			else 
+			{
+				GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
+				GetCharacterMovement()->bOrientRotationToMovement = true;
+				bIsClimbing = false;
+			}
+			EMovementMode movementMode = GetCharacterMovement()->GetGroundMovementMode();
 		}
 	}
 }

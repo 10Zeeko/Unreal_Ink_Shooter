@@ -66,7 +66,7 @@ bool ALevelComponents::CheckInkAtPosition(AInkPlayerCharacter* aInkPlayer, FHitR
 	FLinearColor color = UKismetRenderingLibrary::ReadRenderTargetRawUV(this, inkedSurfaceTexture, UV.X, UV.Y);
 	
 	// Debug string to check what color is there
-	ScreenD(color.ToString());
+	// ScreenD(color.ToString());
 	switch (aInkPlayer->playerTeam)
 	{
 		case ETeam::TEAM1:
