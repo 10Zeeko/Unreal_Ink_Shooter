@@ -19,7 +19,7 @@ void AInkMeter::BeginPlay()
 	if (apLevelComponents.Num() == 0)
 	{
 		TArray<AActor*> mLevelComponents;
-		UGameplayStatics::GetAllActorsOfClass(this, ALevelComponents::StaticClass(), mLevelComponents)
+		UGameplayStatics::GetAllActorsOfClass(this, ALevelComponents::StaticClass(), mLevelComponents);
 		for (AActor* levelComponent : mLevelComponents)
 		{
 			apLevelComponents.Add(Cast<ALevelComponents>(levelComponent));

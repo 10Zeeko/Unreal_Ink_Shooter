@@ -28,10 +28,42 @@ void ALevelComponents::BeginPlay()
 	brushDynMaterial = UMaterialInstanceDynamic::Create(apBrushMaterial, this);
 }
 
-void ALevelComponents::CheckInk()
+TMap<FColor, int32> ALevelComponents::CheckInk(TArray<FColor> ColorsToCount)
 {
-	if(!IsValid(inkedSurfaceTexture)) return;
-	inkedSurfaceTexture->mip
+	// Ensure the texture exists
+	if (!inkedSurfaceTexture) return TMap<FColor, int32>();
+
+	int SampleSize = FMath::CeilToInt(inkedSurfaceTexture->SizeX * inkedSurfaceTexture->SizeY * 0.25f);
+	// Create a FReadSurfaceDataFlags
+	FReadSurfaceDataFlags ReadPixelFlags(RCM_UNorm);
+
+	// Create a TArray to store the pixel data
+	TArray<FColor> OutBMP;
+
+	// Read the pixel data from the render target
+	inkedSurfaceTexture->GameThread_GetRenderTargetResource()->ReadPixels(OutBMP, ReadPixelFlags);
+
+	// Initialize the color count map
+	TMap<FColor, int32> ColorCounts;
+	for (FColor Color : ColorsToCount)
+	{
+		ColorCounts.Add(Color, 0);
+	}
+
+	// Create a random number generator
+	FRandomStream RandStream;
+
+	// Sample a subset of pixels
+	for (int i = 0; i < SampleSize; ++i)
+	{
+		int32 Index = RandStream.RandRange(0, OutBMP.Num() - 1);
+		if (ColorCounts.Contains(OutBMP[Index]))
+		{
+			ColorCounts[OutBMP[Index]]++;
+		}
+	}
+
+	return ColorCounts;
 }
 
 void ALevelComponents::PaintAtPosition(AInkBullets* aInkBullet, FHitResult aHitResult)
