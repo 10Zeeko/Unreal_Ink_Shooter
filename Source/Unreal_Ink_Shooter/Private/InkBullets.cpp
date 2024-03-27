@@ -60,7 +60,6 @@ void AInkBullets::DetectHitInSurface()
 			if (levelComponents)
 			{
 				levelComponents->PaintAtPosition(this, Hit);
-				Destroy();
 			}
 		}
 	}
@@ -89,6 +88,7 @@ void AInkBullets::DetectHitInSurface()
 			}
 		}
 	}
+	Destroy();
 }
 
 void AInkBullets::OnOverlapBegin(UPrimitiveComponent* newComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
