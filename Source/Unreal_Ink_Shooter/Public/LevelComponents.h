@@ -33,7 +33,7 @@ public:
 	UMaterialInstanceDynamic* brushDynMaterial;
 
 	UFUNCTION(BlueprintCallable)
-	TMap<FColor, int32> CheckInk(TArray<FColor> ColorsToCount);
+	TArray<int> CheckInk(TArray<FColor> ColorsToCount);
 	
 	UFUNCTION(BlueprintCallable)
 	virtual void PaintAtPosition(AInkBullets* aInkBullet, FHitResult aHitResult);

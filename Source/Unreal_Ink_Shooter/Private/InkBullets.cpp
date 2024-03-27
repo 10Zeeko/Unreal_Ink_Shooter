@@ -2,6 +2,9 @@
 
 #include "LevelComponents.h"
 #include "Components/ArrowComponent.h"
+#include "Components/SphereComponent.h"
+#include "Kismet/BlueprintMapLibrary.h"
+#include "Unreal_Ink_Shooter/Public/Utils.h"
 
 AInkBullets::AInkBullets()
 {
@@ -12,6 +15,14 @@ AInkBullets::AInkBullets()
 
 	apSphereComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InkBullets"));
 	apSphereComponent->SetupAttachment(apArrowForward);
+
+	apCollisionSphere = CreateDefaultSubobject<USphereComponent>("CollisionSphere");
+	apCollisionSphere->SetupAttachment(apSphereComponent);
+	apCollisionSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	apCollisionSphere->bHiddenInGame = false;
+	apCollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AInkBullets::OnOverlapBegin);
+
+	mColorsToCheck = { FColor(255, 0, 0), FColor(0, 0, 255) };
 	
 	apProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 }
@@ -19,7 +30,6 @@ AInkBullets::AInkBullets()
 void AInkBullets::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void AInkBullets::DetectHitInSurface()
@@ -57,7 +67,7 @@ void AInkBullets::DetectHitInSurface()
 
 	location = apArrowDown->GetComponentLocation();
 	rotation = apArrowDown->GetForwardVector();
-
+	
 	GetWorld()->LineTraceMultiByProfile(
 		bulletHit,
 		location,
@@ -78,6 +88,15 @@ void AInkBullets::DetectHitInSurface()
 				Destroy();
 			}
 		}
+	}
+}
+
+void AInkBullets::OnOverlapBegin(UPrimitiveComponent* newComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (ALevelComponents* levelComponents = Cast<ALevelComponents>(OtherActor))
+	{
+		DetectHitInSurface();
 	}
 }
 

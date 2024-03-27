@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "LevelComponents.h"
+#include "PlayerHud.h"
 #include "GameFramework/Actor.h"
 #include "InkMeter.generated.h"
 
@@ -17,6 +18,11 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<ALevelComponents*> apLevelComponents;
+
+	FTimerHandle MCheckTimerHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	APlayerHud* apPlayerHud;
 
 	void CheckInkFromLevelComponents();
 protected:

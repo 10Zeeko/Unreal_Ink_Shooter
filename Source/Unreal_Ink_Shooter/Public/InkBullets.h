@@ -8,6 +8,7 @@
 #include "Player/InkPlayerCharacter.h"
 #include "InkBullets.generated.h"
 
+class USphereComponent;
 class AWeapon;
 
 UCLASS()
@@ -27,7 +28,11 @@ public:
 	UArrowComponent* apArrowForward;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UArrowComponent* apArrowDown;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	USphereComponent* apCollisionSphere;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FColor> mColorsToCheck;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float mPaintSize {0.1f};
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -37,6 +42,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void DetectHitInSurface();
+
+	UFUNCTION()
+	virtual void OnOverlapBegin(class UPrimitiveComponent* newComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
