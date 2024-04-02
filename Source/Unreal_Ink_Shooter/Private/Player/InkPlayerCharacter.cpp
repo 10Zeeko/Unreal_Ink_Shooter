@@ -214,6 +214,15 @@ void AInkPlayerCharacter::SwimClimbLineTrace()
 			}
 		}
 	}
+	else
+	{
+		if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Flying)
+		{
+			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
+			GetCharacterMovement()->bOrientRotationToMovement = true;
+			bIsClimbing = false;
+		}
+	}
 }
 
 // Called when the game starts or when spawned

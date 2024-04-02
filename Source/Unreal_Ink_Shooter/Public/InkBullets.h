@@ -26,8 +26,6 @@ public:
 	UProjectileMovementComponent* apProjectileMovementComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UArrowComponent* apArrowForward;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UArrowComponent* apArrowDown;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	USphereComponent* apCollisionSphere;
 
@@ -41,7 +39,7 @@ public:
 	ETeam mpOwnerTeam {ETeam::NONE};
 
 	UFUNCTION(BlueprintCallable)
-	virtual void DetectHitInSurface();
+	virtual void DetectHitInSurface(FTransform aOverlappedActorTransform);
 
 	UFUNCTION()
 	virtual void OnOverlapBegin(class UPrimitiveComponent* newComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

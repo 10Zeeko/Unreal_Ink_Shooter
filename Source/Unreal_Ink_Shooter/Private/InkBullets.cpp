@@ -4,14 +4,13 @@
 #include "Components/ArrowComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/BlueprintMapLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Unreal_Ink_Shooter/Public/Utils.h"
 
 AInkBullets::AInkBullets()
 {
 	apArrowForward = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowForward"));
 	apArrowForward->SetupAttachment(RootComponent);
-	apArrowDown = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowDown"));
-	apArrowDown->SetupAttachment(apArrowForward);
 
 	apSphereComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InkBullets"));
 	apSphereComponent->SetupAttachment(apArrowForward);
@@ -32,9 +31,11 @@ void AInkBullets::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AInkBullets::DetectHitInSurface()
+void AInkBullets::DetectHitInSurface(FTransform aOverlappedActorTransform)
 {
 	FVector location = apArrowForward->GetComponentLocation();
+	FRotator lookAt = UKismetMathLibrary::FindLookAtRotation(location, aOverlappedActorTransform.GetLocation());
+	apArrowForward->SetWorldRotation(lookAt);
 	FVector rotation = apArrowForward->GetForwardVector();
 	FCollisionQueryParams traceCollisionParams = FCollisionQueryParams(FName(TEXT("RV_Trace")), true, this);
 	traceCollisionParams.bTraceComplex = true;
@@ -46,7 +47,7 @@ void AInkBullets::DetectHitInSurface()
 	GetWorld()->LineTraceMultiByProfile(
 		bulletHit,
 		location,
-		location + rotation * 15.0f,
+		location + rotation * 30.0f,
 		TEXT("Ink"),
 		traceCollisionParams
 	);
@@ -60,31 +61,6 @@ void AInkBullets::DetectHitInSurface()
 			if (levelComponents)
 			{
 				levelComponents->PaintAtPosition(this, Hit);
-			}
-		}
-	}
-
-	location = apArrowDown->GetComponentLocation();
-	rotation = apArrowDown->GetForwardVector();
-	
-	GetWorld()->LineTraceMultiByProfile(
-		bulletHit,
-		location,
-		location + rotation * 15.0f,
-		TEXT("Ink"),
-		traceCollisionParams
-	);
-	for (FHitResult& Hit : bulletHit)
-	{
-		if (Hit.bBlockingHit)
-		{
-			// Cast to actor LevelComponents and call PaintAtPosition
-			ALevelComponents* levelComponents = Cast<ALevelComponents>(Hit.GetActor());
-
-			if (levelComponents)
-			{
-				levelComponents->PaintAtPosition(this, Hit);
-				Destroy();
 			}
 		}
 	}
@@ -96,7 +72,7 @@ void AInkBullets::OnOverlapBegin(UPrimitiveComponent* newComp, AActor* OtherActo
 {
 	if (ALevelComponents* levelComponents = Cast<ALevelComponents>(OtherActor))
 	{
-		DetectHitInSurface();
+		DetectHitInSurface(OtherActor->GetTransform());
 	}
 }
 
