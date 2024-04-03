@@ -134,18 +134,18 @@ void AInkPlayerCharacter::checkIfPlayerIsInInk()
 					if (bIsInInk)
 					{
 						GetCharacterMovement()->MaxWalkSpeed = 1200.f;
-						apShipMesh->SetRelativeLocation(FVector(0.f, 0.f, -100.f));
+						apShipMesh->SetHiddenInGame(true);
 					}
 					else
 					{
 						GetCharacterMovement()->MaxWalkSpeed = 300.f;
-						apShipMesh->SetRelativeLocation(FVector(0.f, 0.f, 15.f));
+						apShipMesh->SetHiddenInGame(false);
 					}
 				}
 				else
 				{
 					GetCharacterMovement()->MaxWalkSpeed = 300.f;
-					apShipMesh->SetRelativeLocation(FVector(0.f, 0.f, 15.f));
+					apShipMesh->SetHiddenInGame(false);
 				}
 			}
 		}
@@ -186,12 +186,14 @@ void AInkPlayerCharacter::SwimClimbLineTrace()
 				bIsClimbing = true;
 				EMovementMode movementMode = GetCharacterMovement()->GetGroundMovementMode();
 				ScreenD(movementMode == EMovementMode::MOVE_Flying ? "Flying" : "Walking");
+				apShipMesh->SetHiddenInGame(true);
 			}
 			else 
 			{
 				GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
 				GetCharacterMovement()->bOrientRotationToMovement = true;
 				bIsClimbing = false;
+				apShipMesh->SetHiddenInGame(false);
 			}
 		}
 	}
@@ -202,6 +204,7 @@ void AInkPlayerCharacter::SwimClimbLineTrace()
 			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
 			GetCharacterMovement()->bOrientRotationToMovement = true;
 			bIsClimbing = false;
+			apShipMesh->SetHiddenInGame(false);
 		}
 	}
 }
