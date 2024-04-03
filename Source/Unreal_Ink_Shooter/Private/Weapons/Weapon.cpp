@@ -4,7 +4,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
-// Sets default values
 AWeapon::AWeapon()
 {
 	apArrowForward = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowForward"));
@@ -53,21 +52,24 @@ void AWeapon::Shoot(UCameraComponent& FollowCamera, UCharacterMovementComponent*
 {
 	if (bCanShoot)
 	{
-		// Rotates the character to the right direction
-		FVector CameraForwardVector = FollowCamera.GetForwardVector();
-		FRotator NewRotation = UKismetMathLibrary::MakeRotFromX(CameraForwardVector);
-
-		FVector SpawnLocation = GetActorLocation();
-		AInkBullets* inkBullet = GetWorld()->SpawnActor<AInkBullets>(mBulletBP, SpawnLocation, NewRotation);
-		inkBullet->mpOwnerTeam = playerTeam;
-		playerCharacterMovement->RotationRate = FRotator(0.0f, 1800.0f, 00.0f);
-		playerCharacterMovement->bOrientRotationToMovement = false;
-		playerCharacterMovement->bUseControllerDesiredRotation = true;
-		bIsShooting = true;
-		bCanShoot = false;
-
+		PrepareForShooting(FollowCamera, playerCharacterMovement);
 		GetWorld()->GetTimerManager().SetTimer(mFireRateTimerHandle, this, &AWeapon::FireRateTimer, 1 / mFireRate, false);
 	}
+}
+
+void AWeapon::PrepareForShooting(UCameraComponent& FollowCamera, UCharacterMovementComponent* playerCharacterMovement)
+{
+	FVector CameraForwardVector = FollowCamera.GetForwardVector();
+	FRotator NewRotation = UKismetMathLibrary::MakeRotFromX(CameraForwardVector);
+
+	FVector SpawnLocation = GetActorLocation();
+	AInkBullets* inkBullet = GetWorld()->SpawnActor<AInkBullets>(mBulletBP, SpawnLocation, NewRotation);
+	inkBullet->mpOwnerTeam = playerTeam;
+	playerCharacterMovement->RotationRate = FRotator(0.0f, 1800.0f, 00.0f);
+	playerCharacterMovement->bOrientRotationToMovement = false;
+	playerCharacterMovement->bUseControllerDesiredRotation = true;
+	bIsShooting = true;
+	bCanShoot = false;
 }
 
 void AWeapon::FireRateTimer()
@@ -75,10 +77,8 @@ void AWeapon::FireRateTimer()
 	bCanShoot = true;
 }
 
-// Called when the game starts or when spawned
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	SetupPlayerWeapon();
 }
-

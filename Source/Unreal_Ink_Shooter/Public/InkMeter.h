@@ -26,5 +26,6 @@ public:
 
 	void CheckInkFromLevelComponents();
 protected:
+	void FindAllLevelComponents();
 	virtual void BeginPlay() override;
 };

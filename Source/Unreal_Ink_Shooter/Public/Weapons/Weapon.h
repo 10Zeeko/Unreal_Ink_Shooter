@@ -54,6 +54,7 @@ public:
 	void PlayerSwimming();
 	void PlayerShooting();
 
+	void PrepareForShooting(UCameraComponent& FollowCamera, UCharacterMovementComponent* playerCharacterMovement);
 	void Shoot(UCameraComponent& FollowCamera, UCharacterMovementComponent* playerCharacterMovement);
 protected:
 	// Called when the game starts or when spawned

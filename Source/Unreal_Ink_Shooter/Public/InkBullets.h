@@ -19,6 +19,7 @@ class UNREAL_INK_SHOOTER_API AInkBullets : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AInkBullets();
+	void InitializeComponents();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* apSphereComponent;
@@ -38,6 +39,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	ETeam mpOwnerTeam {ETeam::NONE};
 
+	FRotator GetLookAtRotation(const FTransform Transform);
+	FCollisionQueryParams GetTraceCollisionParams();
+	FVector GetLocation();
+	void PaintAtPosition(TArray<FHitResult>& Array);
 	UFUNCTION(BlueprintCallable)
 	virtual void DetectHitInSurface(FTransform aOverlappedActorTransform);
 

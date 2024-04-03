@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Player/InkPlayerCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -13,7 +10,6 @@
 #include "Unreal_Ink_Shooter/Public/Utils.h"
 #include "Weapons/Weapon.h"
 
-// Sets default values
 AInkPlayerCharacter::AInkPlayerCharacter()
 {
 	bUseControllerRotationPitch = false;
@@ -48,24 +44,12 @@ void AInkPlayerCharacter::Move(const FInputActionValue& Value)
 
 	if (Controller != nullptr)
 	{
-		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-		// get forward vector
-		FVector MoveDirection;
-		if (bIsClimbing)
-		{
-			MoveDirection = UKismetMathLibrary::GetUpVector(YawRotation);
-		}
-		else
-		{
-			MoveDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		}
-		// get right vector 
+		FVector MoveDirection = bIsClimbing ? UKismetMathLibrary::GetUpVector(YawRotation) : FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-		// add movement 
 		AddMovementInput(MoveDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
@@ -77,7 +61,6 @@ void AInkPlayerCharacter::Look(const FInputActionValue& Value)
 
 	if (Controller != nullptr)
 	{
-		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
@@ -143,7 +126,6 @@ void AInkPlayerCharacter::checkIfPlayerIsInInk()
 		{
 			if (Hit.bBlockingHit)
 			{
-				// Cast to actor LevelComponents and call PaintAtPosition
 				ALevelComponents* levelComponents = Cast<ALevelComponents>(Hit.GetActor());
 
 				if (levelComponents)
@@ -152,7 +134,6 @@ void AInkPlayerCharacter::checkIfPlayerIsInInk()
 					if (bIsInInk)
 					{
 						GetCharacterMovement()->MaxWalkSpeed = 1200.f;
-						// Move the ship under the ink
 						apShipMesh->SetRelativeLocation(FVector(0.f, 0.f, -100.f));
 					}
 					else
@@ -225,7 +206,6 @@ void AInkPlayerCharacter::SwimClimbLineTrace()
 	}
 }
 
-// Called when the game starts or when spawned
 void AInkPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -245,12 +225,10 @@ void AInkPlayerCharacter::BeginPlay()
 
 void AInkPlayerCharacter::SetupPlayerWeapon()
 {
-	// Spawn selectedWeapon actor
 	FActorSpawnParameters spawnParams;
 	spawnParams.Owner = this;
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	mCurrentWeapon = GetWorld()->SpawnActor<AWeapon>(selectedWeapon, GetActorLocation(), FRotator(0.0f, 0.0f, 0.0f), spawnParams);
-	// Attach selectedWeapon actor
 	FAttachmentTransformRules attachmentRules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepRelative, EAttachmentRule::KeepWorld, true);
 	mCurrentWeapon->AttachToComponent(GetMesh(), attachmentRules, "WeaponSocket");
 }
@@ -260,7 +238,6 @@ void AInkPlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-// Called to bind functionality to input
 void AInkPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {

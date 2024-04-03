@@ -32,16 +32,24 @@ public:
 	UPROPERTY()
 	UMaterialInstanceDynamic* brushDynMaterial;
 
+	void InitializeResultArray(TArray<FColor> ColorsToCount, TArray<int>& Result);
+	TArray<int> CountColors(TArray<FColor> Array, int SampleSize, TArray<FColor> Colors);
+	TArray<int> SamplePixels(TArray<FColor> Array);
 	UFUNCTION(BlueprintCallable)
 	TArray<int> CheckInk(TArray<FColor> ColorsToCount);
-	
+
+	void SetBrushSplashAndTexture();
+	void SetBrushColor(AInkBullets* InkBullets);
+	void SetBrushParameters(AInkBullets* aInkBullet, FHitResult aHitResult);
 	UFUNCTION(BlueprintCallable)
 	virtual void PaintAtPosition(AInkBullets* aInkBullet, FHitResult aHitResult);
+	bool IsColorMatch(AInkPlayerCharacter* AInkPlayer, FLinearColor Color);
 	UFUNCTION(BlueprintCallable)
 	virtual bool CheckInkAtPosition(AInkPlayerCharacter* aInkPlayer, FHitResult aHitResult);
-
-	virtual void Tick(float DeltaTime) override;
 protected:
+	void SetUpInkedSurfaceTexture(UMaterialInstanceDynamic* InkedSurfaceMaterial);
+	void SetUpBrushMaterial();
+	void SetUpMaterials();
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 };

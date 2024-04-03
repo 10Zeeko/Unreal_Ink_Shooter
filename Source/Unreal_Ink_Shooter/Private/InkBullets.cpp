@@ -1,5 +1,4 @@
 #include "InkBullets.h"
-
 #include "LevelComponents.h"
 #include "Components/ArrowComponent.h"
 #include "Components/SphereComponent.h"
@@ -33,38 +32,55 @@ void AInkBullets::BeginPlay()
 
 void AInkBullets::DetectHitInSurface(FTransform aOverlappedActorTransform)
 {
-	FVector location = apArrowForward->GetComponentLocation();
-	FRotator lookAt = UKismetMathLibrary::FindLookAtRotation(location, aOverlappedActorTransform.GetLocation());
+	FRotator lookAt = GetLookAtRotation(aOverlappedActorTransform);
 	apArrowForward->SetWorldRotation(lookAt);
 	FVector rotation = apArrowForward->GetForwardVector();
+	FCollisionQueryParams traceCollisionParams = GetTraceCollisionParams();
+
+	TArray<FHitResult> bulletHit;
+	GetWorld()->LineTraceMultiByProfile(
+		bulletHit,
+		GetLocation(),
+		GetLocation() + rotation * 30.0f,
+		TEXT("Ink"),
+		traceCollisionParams
+	);
+	PaintAtPosition(bulletHit);
+	Destroy();
+}
+
+FRotator AInkBullets::GetLookAtRotation(FTransform aOverlappedActorTransform)
+{
+	return UKismetMathLibrary::FindLookAtRotation(GetLocation(), aOverlappedActorTransform.GetLocation());
+}
+
+FVector AInkBullets::GetLocation()
+{
+	return apArrowForward->GetComponentLocation();
+}
+
+FCollisionQueryParams AInkBullets::GetTraceCollisionParams()
+{
 	FCollisionQueryParams traceCollisionParams = FCollisionQueryParams(FName(TEXT("RV_Trace")), true, this);
 	traceCollisionParams.bTraceComplex = true;
 	traceCollisionParams.bReturnPhysicalMaterial = true;
 	traceCollisionParams.bReturnFaceIndex = true;
+	return traceCollisionParams;
+}
 
-	TArray<FHitResult> bulletHit;
-
-	GetWorld()->LineTraceMultiByProfile(
-		bulletHit,
-		location,
-		location + rotation * 30.0f,
-		TEXT("Ink"),
-		traceCollisionParams
-	);
+void AInkBullets::PaintAtPosition(TArray<FHitResult>& bulletHit)
+{
 	for (FHitResult& Hit : bulletHit)
 	{
 		if (Hit.bBlockingHit)
 		{
-			// Cast to actor LevelComponents and call PaintAtPosition
 			ALevelComponents* levelComponents = Cast<ALevelComponents>(Hit.GetActor());
-
 			if (levelComponents)
 			{
 				levelComponents->PaintAtPosition(this, Hit);
 			}
 		}
 	}
-	Destroy();
 }
 
 void AInkBullets::OnOverlapBegin(UPrimitiveComponent* newComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
@@ -75,4 +91,3 @@ void AInkBullets::OnOverlapBegin(UPrimitiveComponent* newComp, AActor* OtherActo
 		DetectHitInSurface(OtherActor->GetTransform());
 	}
 }
-
