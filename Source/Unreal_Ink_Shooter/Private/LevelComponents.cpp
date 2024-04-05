@@ -37,25 +37,25 @@ void ALevelComponents::SetUpBrushMaterial()
 	brushDynMaterial = UMaterialInstanceDynamic::Create(apBrushMaterial, this);
 }
 
-TArray<int> ALevelComponents::CheckInk(TArray<FColor> ColorsToCount)
+void ALevelComponents::CheckInk(TArray<FColor>& ColorsToCount)
 {
-	if (!inkedSurfaceTexture) return TArray<int>();
-	return SamplePixels(ColorsToCount);
+	if (!inkedSurfaceTexture) return;
+	inkValues.Empty();
+	SamplePixels(ColorsToCount);
 }
 
-TArray<int> ALevelComponents::SamplePixels(TArray<FColor> ColorsToCount)
+void ALevelComponents::SamplePixels(TArray<FColor>& ColorsToCount)
 {
 	int SampleSize = FMath::CeilToInt(inkedSurfaceTexture->SizeX * inkedSurfaceTexture->SizeY * 0.25f);
 	FReadSurfaceDataFlags ReadPixelFlags(RCM_UNorm);
 	TArray<FColor> OutBMP;
 	inkedSurfaceTexture->GameThread_GetRenderTargetResource()->ReadPixels(OutBMP, ReadPixelFlags);
-	return CountColors(ColorsToCount, SampleSize, OutBMP);
+	CountColors(ColorsToCount, SampleSize, OutBMP);
 }
 
-TArray<int> ALevelComponents::CountColors(TArray<FColor> ColorsToCount, int SampleSize, TArray<FColor> OutBMP)
+void ALevelComponents::CountColors(TArray<FColor>& ColorsToCount, int SampleSize, TArray<FColor>& OutBMP)
 {
-	TArray<int> Result;
-	InitializeResultArray(ColorsToCount, Result);
+	InitializeResultArray(ColorsToCount);
 	FRandomStream RandStream;
 	for (int i = 0; i < SampleSize; ++i)
 	{
@@ -63,17 +63,16 @@ TArray<int> ALevelComponents::CountColors(TArray<FColor> ColorsToCount, int Samp
 		int32 ColorIndex = ColorsToCount.IndexOfByKey(OutBMP[Index]);
 		if (ColorIndex != INDEX_NONE)
 		{
-			Result[ColorIndex]++;
+			inkValues[ColorIndex]++;
 		}
 	}
-	return Result;
 }
 
-void ALevelComponents::InitializeResultArray(TArray<FColor> ColorsToCount, TArray<int>& Result)
+void ALevelComponents::InitializeResultArray(TArray<FColor> ColorsToCount)
 {
 	for (int i = 0; i < ColorsToCount.Num(); ++i)
 	{
-		Result.Add(0);
+		inkValues.Add(0);
 	}
 }
 

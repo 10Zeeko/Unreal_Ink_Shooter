@@ -30,13 +30,16 @@ public:
 	TArray<UTexture2D*> apSplashTextures;
 
 	UPROPERTY()
+	TArray<int> inkValues;
+
+	UPROPERTY()
 	UMaterialInstanceDynamic* brushDynMaterial;
 
-	void InitializeResultArray(TArray<FColor> ColorsToCount, TArray<int>& Result);
-	TArray<int> CountColors(TArray<FColor> Array, int SampleSize, TArray<FColor> Colors);
-	TArray<int> SamplePixels(TArray<FColor> Array);
+	void InitializeResultArray(TArray<FColor> ColorsToCount);
+	void CountColors(TArray<FColor>& Array, int SampleSize, TArray<FColor>& Colors);
+	void SamplePixels(TArray<FColor>& Array);
 	UFUNCTION(BlueprintCallable)
-	TArray<int> CheckInk(TArray<FColor> ColorsToCount);
+	void CheckInk(TArray<FColor>& ColorsToCount);
 
 	void SetBrushSplashAndTexture();
 	void SetBrushColor(AInkBullets* InkBullets);

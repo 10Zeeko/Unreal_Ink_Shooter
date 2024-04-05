@@ -63,7 +63,7 @@ void AWeapon::PrepareForShooting(UCameraComponent& FollowCamera, UCharacterMovem
 	FRotator NewRotation = UKismetMathLibrary::MakeRotFromX(CameraForwardVector);
 
 	FVector SpawnLocation = GetActorLocation();
-	AInkBullets* inkBullet = GetWorld()->SpawnActor<AInkBullets>(mBulletBP, SpawnLocation, NewRotation);
+	inkBullet = GetWorld()->SpawnActor<AInkBullets>(mBulletBP, SpawnLocation, NewRotation);
 	inkBullet->mpOwnerTeam = playerTeam;
 	playerCharacterMovement->RotationRate = FRotator(0.0f, 1800.0f, 00.0f);
 	playerCharacterMovement->bOrientRotationToMovement = false;

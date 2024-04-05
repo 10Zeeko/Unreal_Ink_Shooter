@@ -19,6 +19,9 @@ public:
 	UStaticMeshComponent* apWeaponComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UArrowComponent* apArrowForward;
+
+	UPROPERTY()
+	AInkBullets* inkBullet {};
 	
 #pragma region WEAPON
 	FWeaponsDataRow* GetWeapon(EWeapon aWeapon);

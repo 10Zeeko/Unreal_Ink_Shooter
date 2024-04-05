@@ -9,7 +9,7 @@ AInkMeter::AInkMeter()
 void AInkMeter::CheckInkFromLevelComponents()
 {
 	// Get the ink values for the two teams
-	TArray<FColor> TeamsColors = { FColor::Red, FColor::Blue };
+	TArray<FColor> TeamsColors = { FColor(255,0,0,0), FColor(0,0,255,0) };
 	int RedTeamInk = 0;
 	int BlueTeamInk = 0;
 
@@ -17,9 +17,9 @@ void AInkMeter::CheckInkFromLevelComponents()
 	{
 		if (ALevelComponents* levelC = Cast<ALevelComponents>(apLevelComponent))
 		{
-			TArray<int> InkValues = levelC->CheckInk(TeamsColors);
-			RedTeamInk += InkValues[0];
-			BlueTeamInk += InkValues[1];
+			levelC->CheckInk(TeamsColors);
+			RedTeamInk += levelC->inkValues[0];
+			BlueTeamInk += levelC->inkValues[1];
 		}
 	}
 
@@ -41,7 +41,7 @@ void AInkMeter::BeginPlay()
 	{
 		FindAllLevelComponents();
 	}
-
+	apPlayerHud = Cast<APlayerHud>(UGameplayStatics::GetPlayerController(this, 0)->GetHUD());
 	GetWorld()->GetTimerManager().SetTimer(MCheckTimerHandle, this, &AInkMeter::CheckInkFromLevelComponents, 5, true);
 }
 

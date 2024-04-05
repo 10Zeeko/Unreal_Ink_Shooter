@@ -113,34 +113,26 @@ void AInkPlayerCharacter::checkIfPlayerIsInInk()
 		traceCollisionParams.bReturnPhysicalMaterial = true;
 		traceCollisionParams.bReturnFaceIndex = true;
 
-		TArray<FHitResult> bulletHit;
+		FHitResult checkSurfaceHit;
 
-		GetWorld()->LineTraceMultiByProfile(
-			bulletHit,
+		GetWorld()->LineTraceSingleByChannel(
+			checkSurfaceHit,
 			location,
 			location + rotation * 15.0f,
-			TEXT("Ink"),
+			ECollisionChannel::ECC_Visibility,
 			traceCollisionParams
 		);
-		for (FHitResult& Hit : bulletHit)
+		
+		if (checkSurfaceHit.bBlockingHit)
 		{
-			if (Hit.bBlockingHit)
+			ALevelComponents* levelComponents = Cast<ALevelComponents>(checkSurfaceHit.GetActor());
+			if (levelComponents)
 			{
-				ALevelComponents* levelComponents = Cast<ALevelComponents>(Hit.GetActor());
-
-				if (levelComponents)
+				bIsInInk = levelComponents->CheckInkAtPosition(this, checkSurfaceHit);
+				if (bIsInInk)
 				{
-					bIsInInk = levelComponents->CheckInkAtPosition(this, Hit);
-					if (bIsInInk)
-					{
-						GetCharacterMovement()->MaxWalkSpeed = 1200.f;
-						apShipMesh->SetHiddenInGame(true);
-					}
-					else
-					{
-						GetCharacterMovement()->MaxWalkSpeed = 300.f;
-						apShipMesh->SetHiddenInGame(false);
-					}
+					GetCharacterMovement()->MaxWalkSpeed = 1200.f;
+					apShipMesh->SetHiddenInGame(true);
 				}
 				else
 				{
@@ -148,6 +140,16 @@ void AInkPlayerCharacter::checkIfPlayerIsInInk()
 					apShipMesh->SetHiddenInGame(false);
 				}
 			}
+			else
+			{
+				GetCharacterMovement()->MaxWalkSpeed = 300.f;
+				apShipMesh->SetHiddenInGame(false);
+			}
+		}
+		else
+		{
+			GetCharacterMovement()->MaxWalkSpeed = 300.f;
+			apShipMesh->SetHiddenInGame(false);
 		}
 	}
 	SwimClimbLineTrace();
