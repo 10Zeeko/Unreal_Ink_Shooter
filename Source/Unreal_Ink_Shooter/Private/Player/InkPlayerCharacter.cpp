@@ -118,10 +118,13 @@ void AInkPlayerCharacter::checkIfPlayerIsInInk()
 		GetWorld()->LineTraceSingleByChannel(
 			checkSurfaceHit,
 			location,
-			location + rotation * 15.0f,
+			location + rotation * 20.0f,
 			ECollisionChannel::ECC_Visibility,
 			traceCollisionParams
 		);
+		GetCharacterMovement()->MaxWalkSpeed = 300.f;
+		GetCharacterMovement()->SetWalkableFloorAngle(45.0f);
+		apShipMesh->SetHiddenInGame(false);
 		
 		if (checkSurfaceHit.bBlockingHit)
 		{
@@ -132,24 +135,11 @@ void AInkPlayerCharacter::checkIfPlayerIsInInk()
 				if (bIsInInk)
 				{
 					GetCharacterMovement()->MaxWalkSpeed = 1200.f;
+					GetCharacterMovement()->SetWalkableFloorAngle(60.0f);
 					apShipMesh->SetHiddenInGame(true);
-				}
-				else
-				{
-					GetCharacterMovement()->MaxWalkSpeed = 300.f;
-					apShipMesh->SetHiddenInGame(false);
+					
 				}
 			}
-			else
-			{
-				GetCharacterMovement()->MaxWalkSpeed = 300.f;
-				apShipMesh->SetHiddenInGame(false);
-			}
-		}
-		else
-		{
-			GetCharacterMovement()->MaxWalkSpeed = 300.f;
-			apShipMesh->SetHiddenInGame(false);
 		}
 	}
 	SwimClimbLineTrace();
@@ -171,6 +161,10 @@ void AInkPlayerCharacter::SwimClimbLineTrace()
 			ECollisionChannel::ECC_Visibility,
 			traceCollisionParams
 		);
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	bIsClimbing = false;
+	apShipMesh->SetHiddenInGame(false);
 	if (hit.bBlockingHit)
 	{
 		ALevelComponents* levelComponents = Cast<ALevelComponents>(hit.GetActor());
@@ -180,33 +174,21 @@ void AInkPlayerCharacter::SwimClimbLineTrace()
 			bIsInInk = levelComponents->CheckInkAtPosition(this, hit);
 			if (bIsInInk)
 			{
-				GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
-				GetCharacterMovement()->bOrientRotationToMovement = false;
-				float rot = UKismetMathLibrary::MakeRotFromX(hit.ImpactNormal).Yaw + 180.0f;
-				FRotator newRot = FRotator(GetActorRotation().Pitch, rot, GetActorRotation().Roll);
-				SetActorRotation(newRot);
-				bIsClimbing = true;
-				EMovementMode movementMode = GetCharacterMovement()->GetGroundMovementMode();
-				ScreenD(movementMode == EMovementMode::MOVE_Flying ? "Flying" : "Walking");
-				apShipMesh->SetHiddenInGame(true);
+				float angle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(hit.ImpactNormal, FVector::UpVector)));
+
+				if (angle == 90.0f)
+				{
+					GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+					GetCharacterMovement()->bOrientRotationToMovement = false;
+					float rot = UKismetMathLibrary::MakeRotFromX(hit.ImpactNormal).Yaw + 180.0f;
+					FRotator newRot = FRotator(GetActorRotation().Pitch, rot, GetActorRotation().Roll);
+					SetActorRotation(newRot);
+					bIsClimbing = true;
+					EMovementMode movementMode = GetCharacterMovement()->GetGroundMovementMode();
+					ScreenD(movementMode == EMovementMode::MOVE_Flying ? "Flying" : "Walking");
+					apShipMesh->SetHiddenInGame(true);
+				}
 			}
-			else 
-			{
-				GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
-				GetCharacterMovement()->bOrientRotationToMovement = true;
-				bIsClimbing = false;
-				apShipMesh->SetHiddenInGame(false);
-			}
-		}
-	}
-	else
-	{
-		if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Flying)
-		{
-			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
-			GetCharacterMovement()->bOrientRotationToMovement = true;
-			bIsClimbing = false;
-			apShipMesh->SetHiddenInGame(false);
 		}
 	}
 }
