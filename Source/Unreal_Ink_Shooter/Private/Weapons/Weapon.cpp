@@ -60,6 +60,11 @@ void AWeapon::Shoot(UCameraComponent& FollowCamera, UCharacterMovementComponent*
 void AWeapon::PrepareForShooting(UCameraComponent& FollowCamera, UCharacterMovementComponent* playerCharacterMovement)
 {
 	FVector CameraForwardVector = FollowCamera.GetForwardVector();
+
+	FVector RandomDispersion = FMath::VRand() * mDispersion;
+	CameraForwardVector += RandomDispersion;
+	CameraForwardVector.Normalize();
+
 	FRotator NewRotation = UKismetMathLibrary::MakeRotFromX(CameraForwardVector);
 
 	FVector SpawnLocation = GetActorLocation();

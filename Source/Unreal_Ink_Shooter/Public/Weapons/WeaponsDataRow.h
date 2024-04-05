@@ -9,7 +9,7 @@ enum class EWeapon : uint8
 {
 	NONE = 0 UMETA(DisplayName = "None"),
 	GUN UMETA(DisplayName = "Gun"),
-	DISPERSERGUN UMETA(DisplayName = "Disperser Gun"),
+	DISPERSERGUN UMETA(DisplayName = "DISPERSERGUN"),
 	SHOTGUN UMETA(DisplayName = "Shotgun"),
 	SNIPER UMETA(DisplayName = "Sniper")
 };
