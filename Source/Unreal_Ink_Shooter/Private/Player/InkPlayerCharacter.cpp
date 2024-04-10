@@ -27,13 +27,13 @@ AInkPlayerCharacter::AInkPlayerCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
-	apShipMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShipMesh"));
-	apPlayerMesh = GetMesh();
-	apShipMesh->SetupAttachment(apPlayerMesh);
-	apArrowDown = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowDown"));
-	apArrowDown->SetupAttachment(apPlayerMesh);
-	apClimbArrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ClimbArrow"));
-	apClimbArrow->SetupAttachment(apPlayerMesh);
+	mpShipMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShipMesh"));
+	mpPlayerMesh = GetMesh();
+	mpShipMesh->SetupAttachment(mpPlayerMesh);
+	mpArrowDown = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowDown"));
+	mpArrowDown->SetupAttachment(mpPlayerMesh);
+	mpClimbArrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ClimbArrow"));
+	mpClimbArrow->SetupAttachment(mpPlayerMesh);
 
 	bIsShooting = false;
 }
@@ -82,19 +82,19 @@ void AInkPlayerCharacter::ResetValues()
 
 void AInkPlayerCharacter::EnableSwimming()
 {
-	apPlayerMesh->SetHiddenInGame(true);
+	mpPlayerMesh->SetHiddenInGame(true);
 	mCurrentWeapon->PlayerSwimming();
-	apShipMesh->SetHiddenInGame(false);
+	mpShipMesh->SetHiddenInGame(false);
 	playerState = EPlayer::SWIMMING;
 	GetWorld()->GetTimerManager().SetTimer(mIsInInkTimerHandle, this, &AInkPlayerCharacter::checkIfPlayerIsInInk, 0.1, true);
 }
 
 void AInkPlayerCharacter::DisableSwimming()
 {
-	apPlayerMesh->SetHiddenInGame(false);
+	mpPlayerMesh->SetHiddenInGame(false);
 	mCurrentWeapon->PlayerShooting();
 	playerState = EPlayer::IDLE;
-	apShipMesh->SetHiddenInGame(true);
+	mpShipMesh->SetHiddenInGame(true);
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
 	GetWorld()->GetTimerManager().ClearTimer(mIsInInkTimerHandle);
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
@@ -106,8 +106,8 @@ void AInkPlayerCharacter::checkIfPlayerIsInInk()
 {
 	if (playerState == EPlayer::SWIMMING)
 	{
-		FVector location = apArrowDown->GetComponentLocation();
-		FVector rotation = apArrowDown->GetForwardVector();
+		FVector location = mpArrowDown->GetComponentLocation();
+		FVector rotation = mpArrowDown->GetForwardVector();
 		FCollisionQueryParams traceCollisionParams = FCollisionQueryParams(FName(TEXT("RV_Trace")), true, this);
 		traceCollisionParams.bTraceComplex = true;
 		traceCollisionParams.bReturnPhysicalMaterial = true;
@@ -123,7 +123,7 @@ void AInkPlayerCharacter::checkIfPlayerIsInInk()
 			traceCollisionParams
 		);
 		GetCharacterMovement()->MaxWalkSpeed = 300.f;
-		apShipMesh->SetHiddenInGame(false);
+		mpShipMesh->SetHiddenInGame(false);
 		
 		if (checkSurfaceHit.bBlockingHit)
 		{
@@ -135,7 +135,7 @@ void AInkPlayerCharacter::checkIfPlayerIsInInk()
 				if (bIsInInk)
 				{
 					GetCharacterMovement()->MaxWalkSpeed = 1200.f;
-					apShipMesh->SetHiddenInGame(true);
+					mpShipMesh->SetHiddenInGame(true);
 				}
 			}
 		}
@@ -145,8 +145,8 @@ void AInkPlayerCharacter::checkIfPlayerIsInInk()
 
 void AInkPlayerCharacter::SwimClimbLineTrace()
 {
-	FVector start = apClimbArrow->GetComponentLocation();
-	FVector end = apClimbArrow->GetForwardVector() * 50.f + start;
+	FVector start = mpClimbArrow->GetComponentLocation();
+	FVector end = mpClimbArrow->GetForwardVector() * 50.f + start;
 	FHitResult hit;
 	FCollisionQueryParams traceCollisionParams = FCollisionQueryParams(FName(TEXT("RV_Trace")), true, this);
 	traceCollisionParams.bTraceComplex = true;
@@ -174,16 +174,14 @@ void AInkPlayerCharacter::SwimClimbLineTrace()
 				FRotator newRot = FRotator(GetActorRotation().Pitch, rot, GetActorRotation().Roll);
 				SetActorRotation(newRot);
 				bIsClimbing = true;
-				EMovementMode movementMode = GetCharacterMovement()->GetGroundMovementMode();
-				ScreenD(movementMode == EMovementMode::MOVE_Flying ? "Flying" : "Walking");
-				apShipMesh->SetHiddenInGame(true);
+				mpShipMesh->SetHiddenInGame(true);
 			}
 			else 
 			{
 				GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
 				GetCharacterMovement()->bOrientRotationToMovement = true;
 				bIsClimbing = false;
-				apShipMesh->SetHiddenInGame(false);
+				mpShipMesh->SetHiddenInGame(false);
 			}
 		}
 	}
@@ -194,7 +192,7 @@ void AInkPlayerCharacter::SwimClimbLineTrace()
 			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
 			GetCharacterMovement()->bOrientRotationToMovement = true;
 			bIsClimbing = false;
-			apShipMesh->SetHiddenInGame(false);
+			mpShipMesh->SetHiddenInGame(false);
 		}
 	}
 }
@@ -202,7 +200,7 @@ void AInkPlayerCharacter::SwimClimbLineTrace()
 void AInkPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	apShipMesh->SetHiddenInGame(true);
+	mpShipMesh->SetHiddenInGame(true);
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))

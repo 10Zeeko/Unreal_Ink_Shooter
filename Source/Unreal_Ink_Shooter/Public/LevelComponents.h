@@ -15,42 +15,42 @@ public:
 	ALevelComponents();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* apStaticMesh;
+	UStaticMeshComponent* mpStaticMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UTextureRenderTarget2D* inkedSurfaceTexture;
+	UTextureRenderTarget2D* mpInkedSurfaceTexture;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UMaterial* apSurfaceMaterial;
+	UMaterial* mpSurfaceMaterial;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UMaterial* apBrushMaterial;
+	UMaterial* mpBrushMaterial;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<UTexture2D*> apSplashTextures;
+	TArray<UTexture2D*> mpSplashTextures;
 
 	UPROPERTY()
-	TArray<int> inkValues;
+	TArray<int> mInkValues;
 
 	UPROPERTY()
-	UMaterialInstanceDynamic* brushDynMaterial;
+	UMaterialInstanceDynamic* mpBrushDynMaterial;
 
-	void InitializeResultArray(TArray<FColor> ColorsToCount);
-	void CountColors(TArray<FColor>& Array, int SampleSize, TArray<FColor>& Colors);
-	void SamplePixels(TArray<FColor>& Array);
+	void InitializeResultArray(TArray<FColor> aColorsToCount);
+	void CountColors(TArray<FColor>& aColorsToCount, int aSampleSize, TArray<FColor>& aColors);
+	void SamplePixels(TArray<FColor>& aColorsToCount);
 	UFUNCTION(BlueprintCallable)
-	void CheckInk(TArray<FColor>& ColorsToCount);
+	void CheckInk(TArray<FColor>& aColorsToCount);
 
 	void SetBrushSplashAndTexture();
-	void SetBrushColor(AInkBullets* InkBullets);
+	void SetBrushColor(AInkBullets* aInkBullets);
 	void SetBrushParameters(AInkBullets* aInkBullet, FHitResult aHitResult);
 	UFUNCTION(BlueprintCallable)
 	virtual void PaintAtPosition(AInkBullets* aInkBullet, FHitResult aHitResult);
-	bool IsColorMatch(AInkPlayerCharacter* AInkPlayer, FLinearColor Color);
+	bool IsColorMatch(AInkPlayerCharacter* aInkPlayer, FLinearColor aColor);
 	UFUNCTION(BlueprintCallable)
 	virtual bool CheckInkAtPosition(AInkPlayerCharacter* aInkPlayer, FHitResult aHitResult);
 protected:
-	void SetUpInkedSurfaceTexture(UMaterialInstanceDynamic* InkedSurfaceMaterial);
+	void SetUpInkedSurfaceTexture(UMaterialInstanceDynamic* aInkedSurfaceMaterial);
 	void SetUpBrushMaterial();
 	void SetUpMaterials();
 	// Called when the game starts or when spawned

@@ -13,19 +13,19 @@ void AInkMeter::CheckInkFromLevelComponents()
 	int RedTeamInk = 0;
 	int BlueTeamInk = 0;
 
-	for (ALevelComponents* apLevelComponent : apLevelComponents)
+	for (ALevelComponents* apLevelComponent : mpLevelComponents)
 	{
 		if (ALevelComponents* levelC = Cast<ALevelComponents>(apLevelComponent))
 		{
 			levelC->CheckInk(TeamsColors);
-			RedTeamInk += levelC->inkValues[0];
-			BlueTeamInk += levelC->inkValues[1];
+			RedTeamInk += levelC->mInkValues[0];
+			BlueTeamInk += levelC->mInkValues[1];
 		}
 	}
 
-	if (apPlayerHud)
+	if (mpPlayerHud)
 	{
-		apPlayerHud->evOnUpdateInkMeter.Broadcast(RedTeamInk, BlueTeamInk);
+		mpPlayerHud->evOnUpdateInkMeter.Broadcast(RedTeamInk, BlueTeamInk);
 	}
 	else
 	{
@@ -37,11 +37,11 @@ void AInkMeter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (apLevelComponents.Num() == 0)
+	if (mpLevelComponents.Num() == 0)
 	{
 		FindAllLevelComponents();
 	}
-	apPlayerHud = Cast<APlayerHud>(UGameplayStatics::GetPlayerController(this, 0)->GetHUD());
+	mpPlayerHud = Cast<APlayerHud>(UGameplayStatics::GetPlayerController(this, 0)->GetHUD());
 	GetWorld()->GetTimerManager().SetTimer(MCheckTimerHandle, this, &AInkMeter::CheckInkFromLevelComponents, 5, true);
 }
 
@@ -52,6 +52,6 @@ void AInkMeter::FindAllLevelComponents()
 
 	for (AActor* levelComponent : mLevelComponents)
 	{
-		apLevelComponents.Add(Cast<ALevelComponents>(levelComponent));
+		mpLevelComponents.Add(Cast<ALevelComponents>(levelComponent));
 	}
 }

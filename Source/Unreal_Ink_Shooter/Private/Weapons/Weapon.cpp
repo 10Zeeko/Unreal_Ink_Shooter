@@ -6,11 +6,11 @@
 
 AWeapon::AWeapon()
 {
-	apArrowForward = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowForward"));
-	apArrowForward->SetupAttachment(RootComponent);
+	mpArrowForward = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowForward"));
+	mpArrowForward->SetupAttachment(RootComponent);
 
-	apWeaponComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMeshComponent"));
-	apWeaponComponent->SetupAttachment(apArrowForward);
+	mpWeaponComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMeshComponent"));
+	mpWeaponComponent->SetupAttachment(mpArrowForward);
 }
 
 FWeaponsDataRow* AWeapon::GetWeapon(EWeapon aWeapon)
@@ -38,28 +38,28 @@ void AWeapon::SetupPlayerWeapon()
 
 void AWeapon::PlayerSwimming()
 {
-	apWeaponComponent->SetHiddenInGame(true);
+	mpWeaponComponent->SetHiddenInGame(true);
 	bCanShoot = false;
 }
 
 void AWeapon::PlayerShooting()
 {
-	apWeaponComponent->SetHiddenInGame(false);
+	mpWeaponComponent->SetHiddenInGame(false);
 	bCanShoot = true;
 }
 
-void AWeapon::Shoot(UCameraComponent& FollowCamera, UCharacterMovementComponent* playerCharacterMovement)
+void AWeapon::Shoot(UCameraComponent& aFollowCamera, UCharacterMovementComponent* aPlayerCharacterMovement)
 {
 	if (bCanShoot)
 	{
-		PrepareForShooting(FollowCamera, playerCharacterMovement);
+		PrepareForShooting(aFollowCamera, aPlayerCharacterMovement);
 		GetWorld()->GetTimerManager().SetTimer(mFireRateTimerHandle, this, &AWeapon::FireRateTimer, 1 / mFireRate, false);
 	}
 }
 
-void AWeapon::PrepareForShooting(UCameraComponent& FollowCamera, UCharacterMovementComponent* playerCharacterMovement)
+void AWeapon::PrepareForShooting(UCameraComponent& aFollowCamera, UCharacterMovementComponent* aPlayerCharacterMovement)
 {
-	FVector CameraForwardVector = FollowCamera.GetForwardVector();
+	FVector CameraForwardVector = aFollowCamera.GetForwardVector();
 
 	FVector RandomDispersion = FMath::VRand() * mDispersion;
 	CameraForwardVector += RandomDispersion;
@@ -68,11 +68,11 @@ void AWeapon::PrepareForShooting(UCameraComponent& FollowCamera, UCharacterMovem
 	FRotator NewRotation = UKismetMathLibrary::MakeRotFromX(CameraForwardVector);
 
 	FVector SpawnLocation = GetActorLocation();
-	inkBullet = GetWorld()->SpawnActor<AInkBullets>(mBulletBP, SpawnLocation, NewRotation);
-	inkBullet->mpOwnerTeam = playerTeam;
-	playerCharacterMovement->RotationRate = FRotator(0.0f, 1800.0f, 00.0f);
-	playerCharacterMovement->bOrientRotationToMovement = false;
-	playerCharacterMovement->bUseControllerDesiredRotation = true;
+	mInkBullet = GetWorld()->SpawnActor<AInkBullets>(mBulletBP, SpawnLocation, NewRotation);
+	mInkBullet->mpOwnerTeam = mPlayerTeam;
+	aPlayerCharacterMovement->RotationRate = FRotator(0.0f, 1800.0f, 00.0f);
+	aPlayerCharacterMovement->bOrientRotationToMovement = false;
+	aPlayerCharacterMovement->bUseControllerDesiredRotation = true;
 	bIsShooting = true;
 	bCanShoot = false;
 }

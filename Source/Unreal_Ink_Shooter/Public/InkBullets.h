@@ -22,13 +22,13 @@ public:
 	void InitializeComponents();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* apSphereComponent;
+	UStaticMeshComponent* mpSphereComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UProjectileMovementComponent* apProjectileMovementComponent;
+	UProjectileMovementComponent* mpProjectileMovementComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UArrowComponent* apArrowForward;
+	UArrowComponent* mpArrowForward;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	USphereComponent* apCollisionSphere;
+	USphereComponent* mpCollisionSphere;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FColor> mColorsToCheck;
@@ -39,10 +39,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	ETeam mpOwnerTeam {ETeam::NONE};
 
-	FRotator GetLookAtRotation(const FTransform Transform);
+	FRotator GetLookAtRotation(const FTransform aTransform);
 	FCollisionQueryParams GetTraceCollisionParams();
 	FVector GetLocation();
-	void PaintAtPosition(TArray<FHitResult>& Array);
+	void PaintAtPosition(TArray<FHitResult>& aHitResultArray);
 	UFUNCTION(BlueprintCallable)
 	virtual void DetectHitInSurface(FTransform aOverlappedActorTransform);
 

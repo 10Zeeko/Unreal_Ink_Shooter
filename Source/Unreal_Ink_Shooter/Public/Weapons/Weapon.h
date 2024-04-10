@@ -16,12 +16,12 @@ public:
 	AWeapon();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* apWeaponComponent;
+	UStaticMeshComponent* mpWeaponComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UArrowComponent* apArrowForward;
+	UArrowComponent* mpArrowForward;
 
 	UPROPERTY()
-	AInkBullets* inkBullet {};
+	AInkBullets* mInkBullet {};
 	
 #pragma region WEAPON
 	FWeaponsDataRow* GetWeapon(EWeapon aWeapon);
@@ -46,7 +46,7 @@ public:
 	float mDispersion {0.0f};
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	ETeam playerTeam {ETeam::NONE};
+	ETeam mPlayerTeam {ETeam::NONE};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	bool bIsShooting;
 	bool bCanShoot {true};
@@ -57,8 +57,8 @@ public:
 	void PlayerSwimming();
 	void PlayerShooting();
 
-	void PrepareForShooting(UCameraComponent& FollowCamera, UCharacterMovementComponent* playerCharacterMovement);
-	void Shoot(UCameraComponent& FollowCamera, UCharacterMovementComponent* playerCharacterMovement);
+	void PrepareForShooting(UCameraComponent& aFollowCamera, UCharacterMovementComponent* aPlayerCharacterMovement);
+	void Shoot(UCameraComponent& aFollowCamera, UCharacterMovementComponent* aPlayerCharacterMovement);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

@@ -17,12 +17,12 @@ public:
 	AInkMeter();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<ALevelComponents*> apLevelComponents;
+	TArray<ALevelComponents*> mpLevelComponents;
 
 	FTimerHandle MCheckTimerHandle;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	APlayerHud* apPlayerHud;
+	APlayerHud* mpPlayerHud;
 
 	void CheckInkFromLevelComponents();
 protected:

@@ -8,21 +8,21 @@
 
 AInkBullets::AInkBullets()
 {
-	apArrowForward = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowForward"));
-	apArrowForward->SetupAttachment(RootComponent);
+	mpArrowForward = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowForward"));
+	mpArrowForward->SetupAttachment(RootComponent);
 
-	apSphereComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InkBullets"));
-	apSphereComponent->SetupAttachment(apArrowForward);
+	mpSphereComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InkBullets"));
+	mpSphereComponent->SetupAttachment(mpArrowForward);
 
-	apCollisionSphere = CreateDefaultSubobject<USphereComponent>("CollisionSphere");
-	apCollisionSphere->SetupAttachment(apSphereComponent);
-	apCollisionSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-	apCollisionSphere->bHiddenInGame = false;
-	apCollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AInkBullets::OnOverlapBegin);
+	mpCollisionSphere = CreateDefaultSubobject<USphereComponent>("CollisionSphere");
+	mpCollisionSphere->SetupAttachment(mpSphereComponent);
+	mpCollisionSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	mpCollisionSphere->bHiddenInGame = false;
+	mpCollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AInkBullets::OnOverlapBegin);
 
 	mColorsToCheck = { FColor(255, 0, 0), FColor(0, 0, 255) };
 	
-	apProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
+	mpProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 }
 
 void AInkBullets::BeginPlay()
@@ -33,8 +33,8 @@ void AInkBullets::BeginPlay()
 void AInkBullets::DetectHitInSurface(FTransform aOverlappedActorTransform)
 {
 	FRotator lookAt = GetLookAtRotation(aOverlappedActorTransform);
-	apArrowForward->SetWorldRotation(lookAt);
-	FVector rotation = apArrowForward->GetForwardVector();
+	mpArrowForward->SetWorldRotation(lookAt);
+	FVector rotation = mpArrowForward->GetForwardVector();
 	FCollisionQueryParams traceCollisionParams = GetTraceCollisionParams();
 
 	TArray<FHitResult> bulletHit;
@@ -56,7 +56,7 @@ FRotator AInkBullets::GetLookAtRotation(FTransform aOverlappedActorTransform)
 
 FVector AInkBullets::GetLocation()
 {
-	return apArrowForward->GetComponentLocation();
+	return mpArrowForward->GetComponentLocation();
 }
 
 FCollisionQueryParams AInkBullets::GetTraceCollisionParams()

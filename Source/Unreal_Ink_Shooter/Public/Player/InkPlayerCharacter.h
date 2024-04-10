@@ -58,17 +58,17 @@ public:
 	class UInputAction* SwimAction;
 	
 	UPROPERTY()
-	USkeletalMeshComponent* apPlayerMesh;
+	USkeletalMeshComponent* mpPlayerMesh;
 
 	// Swim
 	FTimerHandle mIsInInkTimerHandle;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* apShipMesh;
+	UStaticMeshComponent* mpShipMesh;
 	EPlayer playerState {EPlayer::IDLE};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UArrowComponent* apArrowDown;
+	UArrowComponent* mpArrowDown;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UArrowComponent* apClimbArrow;
+	UArrowComponent* mpClimbArrow;
 	bool bIsInInk {false};
 	bool bLastCheck {true};
 	bool bIsClimbing {false};
