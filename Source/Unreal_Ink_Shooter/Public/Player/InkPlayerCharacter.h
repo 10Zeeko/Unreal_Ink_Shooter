@@ -57,35 +57,36 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* SwimAction;
 	
-	UPROPERTY()
+	UPROPERTY(Replicated) 
 	USkeletalMeshComponent* mpPlayerMesh;
 
 	// Swim
 	FTimerHandle mIsInInkTimerHandle;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
 	UStaticMeshComponent* mpShipMesh;
 	EPlayer playerState {EPlayer::IDLE};
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
 	UArrowComponent* mpArrowDown;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
 	UArrowComponent* mpClimbArrow;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
 	bool bIsInInk {false};
-	bool bLastCheck {true};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
 	bool bIsClimbing {false};
 
 	// Ink Bullet blueprint
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bullet", Replicated)
 	TSubclassOf<class AInkBullets> InkBullet;
 
 	// Team of the player
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated)
 	ETeam playerTeam {ETeam::NONE};
 	
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated)
 	TSubclassOf<AWeapon> selectedWeapon;
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	AWeapon* mCurrentWeapon;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated)
 	bool bIsShooting;
 
 	virtual void Tick(float DeltaTime) override;
@@ -103,19 +104,26 @@ protected:
 	void Look(const FInputActionValue& Value);
 
 	/** Called for shooting input */
+	UFUNCTION(NetMulticast, Reliable)
 	void Shoot(const FInputActionValue& Value);
+	UFUNCTION(NetMulticast, Reliable)
 	void ResetValues();
 
 	/** Called for swimming **/
+	UFUNCTION(Server, Reliable)
 	void EnableSwimming();
+	UFUNCTION(Server, Reliable)
 	void DisableSwimming();
+	UFUNCTION(Server, Reliable)
 	void checkIfPlayerIsInInk();
+	UFUNCTION(Server, Reliable)
 	void SwimClimbLineTrace();
 
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
 private:
+	UFUNCTION(Server, Reliable)
 	void SetupPlayerWeapon();
 	void StopClimbing();
+public:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

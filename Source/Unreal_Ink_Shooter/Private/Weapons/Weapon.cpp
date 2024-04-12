@@ -3,6 +3,7 @@
 #include "Components/ArrowComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Net/UnrealNetwork.h" // Include this for replication
 
 AWeapon::AWeapon()
 {
@@ -11,6 +12,8 @@ AWeapon::AWeapon()
 
 	mpWeaponComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMeshComponent"));
 	mpWeaponComponent->SetupAttachment(mpArrowForward);
+	bReplicates = true;
+	SetReplicates(true); // Set this actor to replicate
 }
 
 FWeaponsDataRow* AWeapon::GetWeapon(EWeapon aWeapon)
@@ -42,24 +45,10 @@ void AWeapon::PlayerSwimming()
 	bCanShoot = false;
 }
 
-void AWeapon::PlayerShooting()
+void AWeapon::PrepareForShooting_Implementation(UCameraComponent* aFollowCamera,
+	UCharacterMovementComponent* aPlayerCharacterMovement)
 {
-	mpWeaponComponent->SetHiddenInGame(false);
-	bCanShoot = true;
-}
-
-void AWeapon::Shoot(UCameraComponent& aFollowCamera, UCharacterMovementComponent* aPlayerCharacterMovement)
-{
-	if (bCanShoot)
-	{
-		PrepareForShooting(aFollowCamera, aPlayerCharacterMovement);
-		GetWorld()->GetTimerManager().SetTimer(mFireRateTimerHandle, this, &AWeapon::FireRateTimer, 1 / mFireRate, false);
-	}
-}
-
-void AWeapon::PrepareForShooting(UCameraComponent& aFollowCamera, UCharacterMovementComponent* aPlayerCharacterMovement)
-{
-	FVector CameraForwardVector = aFollowCamera.GetForwardVector();
+	FVector CameraForwardVector = aFollowCamera->GetForwardVector();
 
 	FVector RandomDispersion = FMath::VRand() * mDispersion;
 	CameraForwardVector += RandomDispersion;
@@ -77,6 +66,22 @@ void AWeapon::PrepareForShooting(UCameraComponent& aFollowCamera, UCharacterMove
 	bCanShoot = false;
 }
 
+void AWeapon::PlayerShooting_Implementation()
+{
+	mpWeaponComponent->SetHiddenInGame(false);
+	bCanShoot = true;
+}
+
+void AWeapon::Shoot_Implementation(UCameraComponent* aFollowCamera,
+	UCharacterMovementComponent* aPlayerCharacterMovement)
+{
+	if (bCanShoot)
+	{
+		PrepareForShooting(aFollowCamera, aPlayerCharacterMovement);
+		GetWorld()->GetTimerManager().SetTimer(mFireRateTimerHandle, this, &AWeapon::FireRateTimer, 1 / mFireRate, false);
+	}
+}
+
 void AWeapon::FireRateTimer()
 {
 	bCanShoot = true;
@@ -86,4 +91,14 @@ void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	SetupPlayerWeapon();
+}
+
+void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AWeapon, mpWeaponComponent);
+	DOREPLIFETIME(AWeapon, mpArrowForward);
+	DOREPLIFETIME(AWeapon, mInkBullet);
+	DOREPLIFETIME(AWeapon, mPlayerTeam);
 }

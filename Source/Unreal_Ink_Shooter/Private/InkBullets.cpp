@@ -8,6 +8,7 @@
 
 AInkBullets::AInkBullets()
 {
+	bReplicates = true;
 	mpArrowForward = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowForward"));
 	mpArrowForward->SetupAttachment(RootComponent);
 

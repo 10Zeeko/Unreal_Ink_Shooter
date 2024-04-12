@@ -7,11 +7,13 @@
 #include "LevelComponents.h"
 #include "Components/ArrowComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Net/UnrealNetwork.h"
 #include "Unreal_Ink_Shooter/Public/Utils.h"
 #include "Weapons/Weapon.h"
 
 AInkPlayerCharacter::AInkPlayerCharacter()
 {
+	bReplicates = true;
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
@@ -66,13 +68,16 @@ void AInkPlayerCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-void AInkPlayerCharacter::Shoot(const FInputActionValue& Value)
+void AInkPlayerCharacter::Shoot_Implementation(const FInputActionValue& Value)
 {
-	mCurrentWeapon->Shoot(*FollowCamera, GetCharacterMovement());
-	bIsShooting = true;
+	if(IsLocallyControlled())
+	{
+		mCurrentWeapon->Shoot(FollowCamera, GetCharacterMovement());
+		bIsShooting = true;
+	}
 }
 
-void AInkPlayerCharacter::ResetValues()
+void AInkPlayerCharacter::ResetValues_Implementation()
 {
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 360.0f, 0.0f);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -80,7 +85,7 @@ void AInkPlayerCharacter::ResetValues()
 	bIsShooting = false;
 }
 
-void AInkPlayerCharacter::EnableSwimming()
+void AInkPlayerCharacter::EnableSwimming_Implementation()
 {
 	mpPlayerMesh->SetHiddenInGame(true);
 	mCurrentWeapon->PlayerSwimming();
@@ -89,7 +94,7 @@ void AInkPlayerCharacter::EnableSwimming()
 	GetWorld()->GetTimerManager().SetTimer(mIsInInkTimerHandle, this, &AInkPlayerCharacter::checkIfPlayerIsInInk, 0.1, true);
 }
 
-void AInkPlayerCharacter::DisableSwimming()
+void AInkPlayerCharacter::DisableSwimming_Implementation()
 {
 	mpPlayerMesh->SetHiddenInGame(false);
 	mCurrentWeapon->PlayerShooting();
@@ -102,7 +107,7 @@ void AInkPlayerCharacter::DisableSwimming()
 	bIsClimbing = false;
 }
 
-void AInkPlayerCharacter::checkIfPlayerIsInInk()
+void AInkPlayerCharacter::checkIfPlayerIsInInk_Implementation()
 {
 	if (playerState == EPlayer::SWIMMING)
 	{
@@ -143,7 +148,7 @@ void AInkPlayerCharacter::checkIfPlayerIsInInk()
 	SwimClimbLineTrace();
 }
 
-void AInkPlayerCharacter::SwimClimbLineTrace()
+void AInkPlayerCharacter::SwimClimbLineTrace_Implementation()
 {
 	FVector start = mpClimbArrow->GetComponentLocation();
 	FVector end = mpClimbArrow->GetForwardVector() * 50.f + start;
@@ -214,14 +219,36 @@ void AInkPlayerCharacter::BeginPlay()
 	}
 }
 
-void AInkPlayerCharacter::SetupPlayerWeapon()
+void AInkPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AInkPlayerCharacter, mCurrentWeapon);
+	DOREPLIFETIME(AInkPlayerCharacter, mpPlayerMesh);
+	DOREPLIFETIME(AInkPlayerCharacter, mpShipMesh);
+	DOREPLIFETIME(AInkPlayerCharacter, mpArrowDown);
+	DOREPLIFETIME(AInkPlayerCharacter, mpClimbArrow);
+	DOREPLIFETIME(AInkPlayerCharacter, InkBullet);
+	DOREPLIFETIME(AInkPlayerCharacter, playerTeam);
+	DOREPLIFETIME(AInkPlayerCharacter, selectedWeapon);
+	DOREPLIFETIME(AInkPlayerCharacter, bIsShooting);
+	DOREPLIFETIME(AInkPlayerCharacter, bIsClimbing);
+	DOREPLIFETIME(AInkPlayerCharacter, bIsInInk);
+}
+
+
+void AInkPlayerCharacter::SetupPlayerWeapon_Implementation()
 {
 	FActorSpawnParameters spawnParams;
 	spawnParams.Owner = this;
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	mCurrentWeapon = GetWorld()->SpawnActor<AWeapon>(selectedWeapon, GetActorLocation(), FRotator(0.0f, 0.0f, 0.0f), spawnParams);
-	FAttachmentTransformRules attachmentRules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepRelative, EAttachmentRule::KeepWorld, true);
-	mCurrentWeapon->AttachToComponent(GetMesh(), attachmentRules, "WeaponSocket");
+	
+	if(!IsRunningDedicatedServer())
+	{
+		FAttachmentTransformRules attachmentRules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepRelative, EAttachmentRule::KeepWorld, true);
+		mCurrentWeapon->AttachToComponent(GetMesh(), attachmentRules, "WeaponSocket");
+	}
 }
 
 void AInkPlayerCharacter::Tick(float DeltaTime)
