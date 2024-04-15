@@ -55,14 +55,23 @@ public:
 	FTimerHandle mFireRateTimerHandle;
 #pragma endregion
 
-	void PlayerSwimming();
+	UFUNCTION(Server, Reliable)
+	void RPC_Server_PlayerSwimming();
 	UFUNCTION(NetMulticast, Reliable)
-	void PlayerShooting();
+	void RPC_PlayerSwimming();
+	UFUNCTION(Server, Reliable)
+	void RPC_Server_PlayerShooting();
+	UFUNCTION(NetMulticast, Reliable)
+	void RPC_PlayerShooting();
 
 	UFUNCTION(Server, Reliable)
-	void PrepareForShooting(UCameraComponent* aFollowCamera, UCharacterMovementComponent* aPlayerCharacterMovement);
+	void RPC_Server_PrepareForShooting(UCameraComponent* aFollowCamera, UCharacterMovementComponent* aPlayerCharacterMovement);
+	UFUNCTION(NetMulticast, Reliable)
+	void RPC_PrepareForShooting(UCameraComponent* aFollowCamera, UCharacterMovementComponent* aPlayerCharacterMovement);
 	UFUNCTION(Server, Reliable)
-	void Shoot(UCameraComponent* aFollowCamera, UCharacterMovementComponent* aPlayerCharacterMovement);
+	void RPC_Server_Shoot(UCameraComponent* aFollowCamera, UCharacterMovementComponent* aPlayerCharacterMovement);
+	UFUNCTION(NetMulticast, Reliable)
+	void RPC_Shoot(UCameraComponent* aFollowCamera, UCharacterMovementComponent* aPlayerCharacterMovement);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

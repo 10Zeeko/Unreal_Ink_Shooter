@@ -13,7 +13,6 @@ AWeapon::AWeapon()
 	mpWeaponComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMeshComponent"));
 	mpWeaponComponent->SetupAttachment(mpArrowForward);
 	bReplicates = true;
-	SetReplicates(true); // Set this actor to replicate
 }
 
 FWeaponsDataRow* AWeapon::GetWeapon(EWeapon aWeapon)
@@ -39,13 +38,24 @@ void AWeapon::SetupPlayerWeapon()
 	mBulletBP = aWeapon->BulletBP;
 }
 
-void AWeapon::PlayerSwimming()
+void AWeapon::RPC_Server_PlayerSwimming_Implementation()
+{
+	RPC_PlayerSwimming();
+}
+
+void AWeapon::RPC_PlayerSwimming_Implementation()
 {
 	mpWeaponComponent->SetHiddenInGame(true);
 	bCanShoot = false;
 }
 
-void AWeapon::PrepareForShooting_Implementation(UCameraComponent* aFollowCamera,
+void AWeapon::RPC_Server_PrepareForShooting_Implementation(UCameraComponent* aFollowCamera,
+	UCharacterMovementComponent* aPlayerCharacterMovement)
+{
+	RPC_PrepareForShooting(aFollowCamera, aPlayerCharacterMovement);
+}
+
+void AWeapon::RPC_PrepareForShooting_Implementation(UCameraComponent* aFollowCamera,
 	UCharacterMovementComponent* aPlayerCharacterMovement)
 {
 	FVector CameraForwardVector = aFollowCamera->GetForwardVector();
@@ -66,18 +76,28 @@ void AWeapon::PrepareForShooting_Implementation(UCameraComponent* aFollowCamera,
 	bCanShoot = false;
 }
 
-void AWeapon::PlayerShooting_Implementation()
+void AWeapon::RPC_Server_PlayerShooting_Implementation()
+{
+	RPC_PlayerShooting();
+}
+void AWeapon::RPC_PlayerShooting_Implementation()
 {
 	mpWeaponComponent->SetHiddenInGame(false);
 	bCanShoot = true;
 }
 
-void AWeapon::Shoot_Implementation(UCameraComponent* aFollowCamera,
+void AWeapon::RPC_Server_Shoot_Implementation(UCameraComponent* aFollowCamera,
+	UCharacterMovementComponent* aPlayerCharacterMovement)
+{
+	RPC_Shoot(aFollowCamera, aPlayerCharacterMovement);
+}
+
+void AWeapon::RPC_Shoot_Implementation(UCameraComponent* aFollowCamera,
 	UCharacterMovementComponent* aPlayerCharacterMovement)
 {
 	if (bCanShoot)
 	{
-		PrepareForShooting(aFollowCamera, aPlayerCharacterMovement);
+		RPC_Server_PrepareForShooting(aFollowCamera, aPlayerCharacterMovement);
 		GetWorld()->GetTimerManager().SetTimer(mFireRateTimerHandle, this, &AWeapon::FireRateTimer, 1 / mFireRate, false);
 	}
 }

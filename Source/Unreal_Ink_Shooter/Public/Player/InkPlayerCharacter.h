@@ -69,6 +69,8 @@ public:
 	UArrowComponent* mpArrowDown;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
 	UArrowComponent* mpClimbArrow;
+	UPROPERTY(Replicated)
+	FRotator mNewRot;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
 	bool bIsInInk {false};
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
@@ -104,26 +106,43 @@ protected:
 	void Look(const FInputActionValue& Value);
 
 	/** Called for shooting input */
+	UFUNCTION(Server, Reliable)
+	void RPC_Server_Shoot(const FInputActionValue& Value);
 	UFUNCTION(NetMulticast, Reliable)
-	void Shoot(const FInputActionValue& Value);
+	void RPC_Shoot(const FInputActionValue& Value);
+	
+	UFUNCTION(Server, Reliable)
+	void RPC_Server_ResetValues();
 	UFUNCTION(NetMulticast, Reliable)
-	void ResetValues();
+	void RPC_ResetValues();
 
 	/** Called for swimming **/
 	UFUNCTION(Server, Reliable)
-	void EnableSwimming();
+	void RPC_Server_EnableSwimming();
+	UFUNCTION(NetMulticast, Reliable)
+	void RPC_EnableSwimming();
+	
 	UFUNCTION(Server, Reliable)
-	void DisableSwimming();
+	void RPC_Server_DisableSwimming();
+	UFUNCTION(NetMulticast, Reliable)
+	void RPC_DisableSwimming();
+	
 	UFUNCTION(Server, Reliable)
-	void checkIfPlayerIsInInk();
+	void RPC_Server_checkIfPlayerIsInInk();
+	UFUNCTION(NetMulticast, Reliable)
+	void RPC_checkIfPlayerIsInInk(bool isInInk);
+	
 	UFUNCTION(Server, Reliable)
-	void SwimClimbLineTrace();
+	void RPC_Server_SwimClimbLineTrace();
+	UFUNCTION(NetMulticast, Reliable)
+	void RPC_SwimClimbLineTrace(bool isInInk);
 
 	virtual void BeginPlay() override;
 private:
 	UFUNCTION(Server, Reliable)
-	void SetupPlayerWeapon();
-	void StopClimbing();
+	void RPC_Server_SetupPlayerWeapon();
+	UFUNCTION(NetMulticast, Reliable)
+	void RPC_SetupPlayerWeapon();
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

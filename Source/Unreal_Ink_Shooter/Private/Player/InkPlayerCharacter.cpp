@@ -68,16 +68,26 @@ void AInkPlayerCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-void AInkPlayerCharacter::Shoot_Implementation(const FInputActionValue& Value)
+void AInkPlayerCharacter::RPC_Server_Shoot_Implementation(const FInputActionValue& Value)
+{
+	RPC_Shoot(Value);
+}
+
+void AInkPlayerCharacter::RPC_Shoot_Implementation(const FInputActionValue& Value)
 {
 	if(IsLocallyControlled())
 	{
-		mCurrentWeapon->Shoot(FollowCamera, GetCharacterMovement());
+		mCurrentWeapon->RPC_Server_Shoot(FollowCamera, GetCharacterMovement());
 		bIsShooting = true;
 	}
 }
 
-void AInkPlayerCharacter::ResetValues_Implementation()
+void AInkPlayerCharacter::RPC_Server_ResetValues_Implementation()
+{
+	RPC_ResetValues();
+}
+
+void AInkPlayerCharacter::RPC_ResetValues_Implementation()
 {
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 360.0f, 0.0f);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -85,19 +95,31 @@ void AInkPlayerCharacter::ResetValues_Implementation()
 	bIsShooting = false;
 }
 
-void AInkPlayerCharacter::EnableSwimming_Implementation()
+
+void AInkPlayerCharacter::RPC_Server_EnableSwimming_Implementation()
 {
-	mpPlayerMesh->SetHiddenInGame(true);
-	mCurrentWeapon->PlayerSwimming();
-	mpShipMesh->SetHiddenInGame(false);
-	playerState = EPlayer::SWIMMING;
-	GetWorld()->GetTimerManager().SetTimer(mIsInInkTimerHandle, this, &AInkPlayerCharacter::checkIfPlayerIsInInk, 0.1, true);
+	RPC_EnableSwimming();
 }
 
-void AInkPlayerCharacter::DisableSwimming_Implementation()
+void AInkPlayerCharacter::RPC_EnableSwimming_Implementation()
+{
+	mpPlayerMesh->SetHiddenInGame(true);
+	mCurrentWeapon->RPC_Server_PlayerSwimming();
+	mpShipMesh->SetHiddenInGame(false);
+	playerState = EPlayer::SWIMMING;
+	GetWorld()->GetTimerManager().SetTimer(mIsInInkTimerHandle, this, &AInkPlayerCharacter::RPC_Server_checkIfPlayerIsInInk, 0.1, true);
+}
+
+
+void AInkPlayerCharacter::RPC_Server_DisableSwimming_Implementation()
+{
+	RPC_DisableSwimming();
+}
+
+void AInkPlayerCharacter::RPC_DisableSwimming_Implementation()
 {
 	mpPlayerMesh->SetHiddenInGame(false);
-	mCurrentWeapon->PlayerShooting();
+	mCurrentWeapon->RPC_Server_PlayerShooting();
 	playerState = EPlayer::IDLE;
 	mpShipMesh->SetHiddenInGame(true);
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
@@ -107,7 +129,7 @@ void AInkPlayerCharacter::DisableSwimming_Implementation()
 	bIsClimbing = false;
 }
 
-void AInkPlayerCharacter::checkIfPlayerIsInInk_Implementation()
+void AInkPlayerCharacter::RPC_Server_checkIfPlayerIsInInk_Implementation()
 {
 	if (playerState == EPlayer::SWIMMING)
 	{
@@ -141,14 +163,30 @@ void AInkPlayerCharacter::checkIfPlayerIsInInk_Implementation()
 				{
 					GetCharacterMovement()->MaxWalkSpeed = 1200.f;
 					mpShipMesh->SetHiddenInGame(true);
+					RPC_checkIfPlayerIsInInk(bIsInInk);
 				}
 			}
 		}
 	}
-	SwimClimbLineTrace();
+	RPC_Server_SwimClimbLineTrace();
 }
 
-void AInkPlayerCharacter::SwimClimbLineTrace_Implementation()
+void AInkPlayerCharacter::RPC_checkIfPlayerIsInInk_Implementation(bool isInInk)
+{
+	if (bIsInInk)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 1200.f;
+		mpShipMesh->SetHiddenInGame(true);
+	}
+	else
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 300.f;
+		mpShipMesh->SetHiddenInGame(false);
+	}
+}
+
+
+void AInkPlayerCharacter::RPC_Server_SwimClimbLineTrace_Implementation()
 {
 	FVector start = mpClimbArrow->GetComponentLocation();
 	FVector end = mpClimbArrow->GetForwardVector() * 50.f + start;
@@ -176,8 +214,8 @@ void AInkPlayerCharacter::SwimClimbLineTrace_Implementation()
 				GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
 				GetCharacterMovement()->bOrientRotationToMovement = false;
 				float rot = UKismetMathLibrary::MakeRotFromX(hit.ImpactNormal).Yaw + 180.0f;
-				FRotator newRot = FRotator(GetActorRotation().Pitch, rot, GetActorRotation().Roll);
-				SetActorRotation(newRot);
+				mNewRot = FRotator(GetActorRotation().Pitch, rot, GetActorRotation().Roll);
+				SetActorRotation(mNewRot);
 				bIsClimbing = true;
 				mpShipMesh->SetHiddenInGame(true);
 			}
@@ -188,6 +226,7 @@ void AInkPlayerCharacter::SwimClimbLineTrace_Implementation()
 				bIsClimbing = false;
 				mpShipMesh->SetHiddenInGame(false);
 			}
+			RPC_SwimClimbLineTrace(bIsInInk);
 		}
 	}
 	else
@@ -198,9 +237,30 @@ void AInkPlayerCharacter::SwimClimbLineTrace_Implementation()
 			GetCharacterMovement()->bOrientRotationToMovement = true;
 			bIsClimbing = false;
 			mpShipMesh->SetHiddenInGame(false);
+			RPC_SwimClimbLineTrace(false);
 		}
 	}
 }
+
+void AInkPlayerCharacter::RPC_SwimClimbLineTrace_Implementation(bool isInInk)
+{
+	if (bIsInInk)
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+		SetActorRotation(mNewRot);
+		bIsClimbing = true;
+		mpShipMesh->SetHiddenInGame(true);
+	}
+	else 
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		bIsClimbing = false;
+		mpShipMesh->SetHiddenInGame(false);
+	}
+}
+
 
 void AInkPlayerCharacter::BeginPlay()
 {
@@ -215,7 +275,7 @@ void AInkPlayerCharacter::BeginPlay()
 	}
 	if (IsValid(selectedWeapon))
 	{
-		SetupPlayerWeapon();
+		RPC_Server_SetupPlayerWeapon();
 	}
 }
 
@@ -234,10 +294,16 @@ void AInkPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(AInkPlayerCharacter, bIsShooting);
 	DOREPLIFETIME(AInkPlayerCharacter, bIsClimbing);
 	DOREPLIFETIME(AInkPlayerCharacter, bIsInInk);
+	DOREPLIFETIME(AInkPlayerCharacter, mNewRot);
 }
 
 
-void AInkPlayerCharacter::SetupPlayerWeapon_Implementation()
+void AInkPlayerCharacter::RPC_Server_SetupPlayerWeapon_Implementation()
+{
+	RPC_SetupPlayerWeapon();
+}
+
+void AInkPlayerCharacter::RPC_SetupPlayerWeapon_Implementation()
 {
 	FActorSpawnParameters spawnParams;
 	spawnParams.Owner = this;
@@ -248,8 +314,10 @@ void AInkPlayerCharacter::SetupPlayerWeapon_Implementation()
 	{
 		FAttachmentTransformRules attachmentRules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepRelative, EAttachmentRule::KeepWorld, true);
 		mCurrentWeapon->AttachToComponent(GetMesh(), attachmentRules, "WeaponSocket");
+		mCurrentWeapon->mPlayerTeam = playerTeam;
 	}
 }
+
 
 void AInkPlayerCharacter::Tick(float DeltaTime)
 {
@@ -271,11 +339,11 @@ void AInkPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AInkPlayerCharacter::Look);
 
 		//Shooting
-		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AInkPlayerCharacter::Shoot);
-		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Completed, this, &AInkPlayerCharacter::ResetValues);
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AInkPlayerCharacter::RPC_Server_Shoot);
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Completed, this, &AInkPlayerCharacter::RPC_Server_ResetValues);
 
 		//Swimming
-		EnhancedInputComponent->BindAction(SwimAction, ETriggerEvent::Started, this, &AInkPlayerCharacter::EnableSwimming);
-		EnhancedInputComponent->BindAction(SwimAction, ETriggerEvent::Completed, this, &AInkPlayerCharacter::DisableSwimming);
+		EnhancedInputComponent->BindAction(SwimAction, ETriggerEvent::Started, this, &AInkPlayerCharacter::RPC_Server_EnableSwimming);
+		EnhancedInputComponent->BindAction(SwimAction, ETriggerEvent::Completed, this, &AInkPlayerCharacter::RPC_Server_DisableSwimming);
 	}
 }
