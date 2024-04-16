@@ -99,6 +99,11 @@ void AInkPlayerCharacter::RPC_ResetValues_Implementation()
 void AInkPlayerCharacter::RPC_Server_EnableSwimming_Implementation()
 {
 	RPC_EnableSwimming();
+	playerState = EPlayer::SWIMMING;
+	GetWorld()->GetTimerManager().SetTimer(mIsInInkTimerHandle, this, &AInkPlayerCharacter::RPC_Server_checkIfPlayerIsInInk, 0.1, true);
+	mpPlayerMesh->SetHiddenInGame(true);
+	mpShipMesh->SetHiddenInGame(false);
+	mCurrentWeapon->RPC_Server_PlayerSwimming();
 }
 
 void AInkPlayerCharacter::RPC_EnableSwimming_Implementation()
@@ -106,14 +111,19 @@ void AInkPlayerCharacter::RPC_EnableSwimming_Implementation()
 	mpPlayerMesh->SetHiddenInGame(true);
 	mCurrentWeapon->RPC_Server_PlayerSwimming();
 	mpShipMesh->SetHiddenInGame(false);
-	playerState = EPlayer::SWIMMING;
-	GetWorld()->GetTimerManager().SetTimer(mIsInInkTimerHandle, this, &AInkPlayerCharacter::RPC_Server_checkIfPlayerIsInInk, 0.1, true);
 }
 
 
 void AInkPlayerCharacter::RPC_Server_DisableSwimming_Implementation()
 {
 	RPC_DisableSwimming();
+	playerState = EPlayer::IDLE;
+	GetWorld()->GetTimerManager().ClearTimer(mIsInInkTimerHandle);
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	mpShipMesh->SetHiddenInGame(true);
+	GetCharacterMovement()->MaxWalkSpeed = 600.f;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	bIsClimbing = false;
 }
 
 void AInkPlayerCharacter::RPC_DisableSwimming_Implementation()
@@ -123,8 +133,6 @@ void AInkPlayerCharacter::RPC_DisableSwimming_Implementation()
 	playerState = EPlayer::IDLE;
 	mpShipMesh->SetHiddenInGame(true);
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
-	GetWorld()->GetTimerManager().ClearTimer(mIsInInkTimerHandle);
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bIsClimbing = false;
 }
@@ -163,10 +171,15 @@ void AInkPlayerCharacter::RPC_Server_checkIfPlayerIsInInk_Implementation()
 				{
 					GetCharacterMovement()->MaxWalkSpeed = 1200.f;
 					mpShipMesh->SetHiddenInGame(true);
-					RPC_checkIfPlayerIsInInk(bIsInInk);
+				}
+				else
+				{
+					GetCharacterMovement()->MaxWalkSpeed = 300.f;
+					mpShipMesh->SetHiddenInGame(false);
 				}
 			}
 		}
+		RPC_checkIfPlayerIsInInk(bIsInInk);
 	}
 	RPC_Server_SwimClimbLineTrace();
 }
@@ -226,8 +239,8 @@ void AInkPlayerCharacter::RPC_Server_SwimClimbLineTrace_Implementation()
 				bIsClimbing = false;
 				mpShipMesh->SetHiddenInGame(false);
 			}
-			RPC_SwimClimbLineTrace(bIsInInk);
 		}
+		RPC_SwimClimbLineTrace(bIsInInk);
 	}
 	else
 	{

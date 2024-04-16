@@ -6,6 +6,7 @@
 
 ALevelComponents::ALevelComponents()
 {
+	bReplicates = true;
 	PrimaryActorTick.bCanEverTick = true;
 	mpStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LevelMesh"));
 	mpStaticMesh->SetupAttachment(RootComponent);

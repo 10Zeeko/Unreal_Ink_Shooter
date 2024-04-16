@@ -41,6 +41,8 @@ void AWeapon::SetupPlayerWeapon()
 void AWeapon::RPC_Server_PlayerSwimming_Implementation()
 {
 	RPC_PlayerSwimming();
+	mpWeaponComponent->SetHiddenInGame(true);
+	bCanShoot = false;
 }
 
 void AWeapon::RPC_PlayerSwimming_Implementation()
