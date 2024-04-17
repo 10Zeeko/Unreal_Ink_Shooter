@@ -3,7 +3,7 @@
 #include "Components/ArrowComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Net/UnrealNetwork.h" // Include this for replication
+#include "Net/UnrealNetwork.h"
 
 AWeapon::AWeapon()
 {
@@ -54,12 +54,6 @@ void AWeapon::RPC_PlayerSwimming_Implementation()
 void AWeapon::RPC_Server_PrepareForShooting_Implementation(UCameraComponent* aFollowCamera,
 	UCharacterMovementComponent* aPlayerCharacterMovement)
 {
-	RPC_PrepareForShooting(aFollowCamera, aPlayerCharacterMovement);
-}
-
-void AWeapon::RPC_PrepareForShooting_Implementation(UCameraComponent* aFollowCamera,
-	UCharacterMovementComponent* aPlayerCharacterMovement)
-{
 	FVector CameraForwardVector = aFollowCamera->GetForwardVector();
 
 	FVector RandomDispersion = FMath::VRand() * mDispersion;
@@ -71,6 +65,17 @@ void AWeapon::RPC_PrepareForShooting_Implementation(UCameraComponent* aFollowCam
 	FVector SpawnLocation = GetActorLocation();
 	mInkBullet = GetWorld()->SpawnActor<AInkBullets>(mBulletBP, SpawnLocation, NewRotation);
 	mInkBullet->mpOwnerTeam = mPlayerTeam;
+	aPlayerCharacterMovement->RotationRate = FRotator(0.0f, 1800.0f, 00.0f);
+	aPlayerCharacterMovement->bOrientRotationToMovement = false;
+	aPlayerCharacterMovement->bUseControllerDesiredRotation = true;
+	bIsShooting = true;
+	bCanShoot = false;
+	RPC_PrepareForShooting(aFollowCamera, aPlayerCharacterMovement);
+}
+
+void AWeapon::RPC_PrepareForShooting_Implementation(UCameraComponent* aFollowCamera,
+	UCharacterMovementComponent* aPlayerCharacterMovement)
+{
 	aPlayerCharacterMovement->RotationRate = FRotator(0.0f, 1800.0f, 00.0f);
 	aPlayerCharacterMovement->bOrientRotationToMovement = false;
 	aPlayerCharacterMovement->bUseControllerDesiredRotation = true;
@@ -89,12 +94,6 @@ void AWeapon::RPC_PlayerShooting_Implementation()
 }
 
 void AWeapon::RPC_Server_Shoot_Implementation(UCameraComponent* aFollowCamera,
-	UCharacterMovementComponent* aPlayerCharacterMovement)
-{
-	RPC_Shoot(aFollowCamera, aPlayerCharacterMovement);
-}
-
-void AWeapon::RPC_Shoot_Implementation(UCameraComponent* aFollowCamera,
 	UCharacterMovementComponent* aPlayerCharacterMovement)
 {
 	if (bCanShoot)

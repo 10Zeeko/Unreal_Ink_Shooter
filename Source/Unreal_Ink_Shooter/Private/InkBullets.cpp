@@ -78,7 +78,7 @@ void AInkBullets::PaintAtPosition(TArray<FHitResult>& bulletHit)
 			ALevelComponents* levelComponents = Cast<ALevelComponents>(Hit.GetActor());
 			if (levelComponents)
 			{
-				levelComponents->PaintAtPosition(this, Hit);
+				levelComponents->RPC_Server_PaintAtPosition(this, Hit);
 			}
 		}
 	}

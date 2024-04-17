@@ -70,8 +70,6 @@ public:
 	void RPC_PrepareForShooting(UCameraComponent* aFollowCamera, UCharacterMovementComponent* aPlayerCharacterMovement);
 	UFUNCTION(Server, Reliable)
 	void RPC_Server_Shoot(UCameraComponent* aFollowCamera, UCharacterMovementComponent* aPlayerCharacterMovement);
-	UFUNCTION(NetMulticast, Reliable)
-	void RPC_Shoot(UCameraComponent* aFollowCamera, UCharacterMovementComponent* aPlayerCharacterMovement);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

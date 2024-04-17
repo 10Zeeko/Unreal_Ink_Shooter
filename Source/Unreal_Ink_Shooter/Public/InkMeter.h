@@ -24,8 +24,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	APlayerHud* mpPlayerHud;
 
-	void CheckInkFromLevelComponents();
+	UFUNCTION(Server, Unreliable)
+	void RPC_Server_CheckInkFromLevelComponents();
 protected:
-	void FindAllLevelComponents();
+	UFUNCTION(Server, Reliable)
+	void RPC_Server_FindAllLevelComponents();
 	virtual void BeginPlay() override;
 };

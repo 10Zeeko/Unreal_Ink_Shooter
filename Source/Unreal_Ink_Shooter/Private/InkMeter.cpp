@@ -6,7 +6,7 @@ AInkMeter::AInkMeter()
 {
 }
 
-void AInkMeter::CheckInkFromLevelComponents()
+void AInkMeter::RPC_Server_CheckInkFromLevelComponents_Implementation()
 {
 	// Get the ink values for the two teams
 	TArray<FColor> TeamsColors = { FColor(255,0,0,0), FColor(0,0,255,0) };
@@ -17,7 +17,7 @@ void AInkMeter::CheckInkFromLevelComponents()
 	{
 		if (ALevelComponents* levelC = Cast<ALevelComponents>(apLevelComponent))
 		{
-			levelC->CheckInk(TeamsColors);
+			levelC->RPC_Server_CheckInk(TeamsColors);
 			RedTeamInk += levelC->mInkValues[0];
 			BlueTeamInk += levelC->mInkValues[1];
 		}
@@ -39,13 +39,13 @@ void AInkMeter::BeginPlay()
 
 	if (mpLevelComponents.Num() == 0)
 	{
-		FindAllLevelComponents();
+		RPC_Server_FindAllLevelComponents();
 	}
 	mpPlayerHud = Cast<APlayerHud>(UGameplayStatics::GetPlayerController(this, 0)->GetHUD());
-	GetWorld()->GetTimerManager().SetTimer(MCheckTimerHandle, this, &AInkMeter::CheckInkFromLevelComponents, 5, true);
+	GetWorld()->GetTimerManager().SetTimer(MCheckTimerHandle, this, &AInkMeter::RPC_Server_CheckInkFromLevelComponents, 5, true);
 }
 
-void AInkMeter::FindAllLevelComponents()
+void AInkMeter::RPC_Server_FindAllLevelComponents_Implementation()
 {
 	TArray<AActor*> mLevelComponents;
 	UGameplayStatics::GetAllActorsOfClass(this, ALevelComponents::StaticClass(), mLevelComponents);

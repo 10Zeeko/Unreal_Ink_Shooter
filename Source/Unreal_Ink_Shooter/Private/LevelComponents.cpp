@@ -2,6 +2,7 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetRenderingLibrary.h"
+#include "Net/UnrealNetwork.h"
 #include "Unreal_Ink_Shooter/Public/Utils.h"
 
 ALevelComponents::ALevelComponents()
@@ -15,48 +16,71 @@ ALevelComponents::ALevelComponents()
 void ALevelComponents::BeginPlay()
 {
 	Super::BeginPlay();
-	SetUpMaterials();
+	RPC_Server_SetUpMaterials();
 }
 
-void ALevelComponents::SetUpMaterials()
+void ALevelComponents::RPC_Server_SetUpMaterials_Implementation()
 {
 	UMaterialInstanceDynamic* InkedSurfaceMaterial = UMaterialInstanceDynamic::Create(mpSurfaceMaterial, this);
 	mpStaticMesh->SetMaterial(0, InkedSurfaceMaterial);
-	SetUpInkedSurfaceTexture(InkedSurfaceMaterial);
-	SetUpBrushMaterial();
+	RPC_Server_SetUpInkedSurfaceTexture(InkedSurfaceMaterial);
+	RPC_Server_SetUpBrushMaterial();
+	RPC_SetUpMaterials();
 }
 
-void ALevelComponents::SetUpInkedSurfaceTexture(UMaterialInstanceDynamic* aInkedSurfaceMaterial)
+void ALevelComponents::RPC_SetUpMaterials_Implementation()
+{
+	UMaterialInstanceDynamic* InkedSurfaceMaterial = UMaterialInstanceDynamic::Create(mpSurfaceMaterial, this);
+	mpStaticMesh->SetMaterial(0, InkedSurfaceMaterial);
+	RPC_SetUpInkedSurfaceTexture(InkedSurfaceMaterial);
+	RPC_SetUpBrushMaterial();
+}
+
+void ALevelComponents::RPC_Server_SetUpInkedSurfaceTexture_Implementation(UMaterialInstanceDynamic* aInkedSurfaceMaterial)
+{
+	mpInkedSurfaceTexture = UKismetRenderingLibrary::CreateRenderTarget2D(this, 512, 512, RTF_RGBA16f);
+	aInkedSurfaceMaterial->SetTextureParameterValue(TEXT("InkedSurface"), mpInkedSurfaceTexture);
+	aInkedSurfaceMaterial->SetTextureParameterValue(TEXT("NormalTexture"), mpInkedSurfaceTexture);
+	RPC_SetUpInkedSurfaceTexture(aInkedSurfaceMaterial);
+}
+
+void ALevelComponents::RPC_SetUpInkedSurfaceTexture_Implementation(UMaterialInstanceDynamic* aInkedSurfaceMaterial)
 {
 	mpInkedSurfaceTexture = UKismetRenderingLibrary::CreateRenderTarget2D(this, 512, 512, RTF_RGBA16f);
 	aInkedSurfaceMaterial->SetTextureParameterValue(TEXT("InkedSurface"), mpInkedSurfaceTexture);
 	aInkedSurfaceMaterial->SetTextureParameterValue(TEXT("NormalTexture"), mpInkedSurfaceTexture);
 }
 
-void ALevelComponents::SetUpBrushMaterial()
+void ALevelComponents::RPC_Server_SetUpBrushMaterial_Implementation()
+{
+	mpBrushDynMaterial = UMaterialInstanceDynamic::Create(mpBrushMaterial, this);
+	RPC_SetUpBrushMaterial();
+}
+
+void ALevelComponents::RPC_SetUpBrushMaterial_Implementation()
 {
 	mpBrushDynMaterial = UMaterialInstanceDynamic::Create(mpBrushMaterial, this);
 }
 
-void ALevelComponents::CheckInk(TArray<FColor>& aColorsToCount)
+void ALevelComponents::RPC_Server_CheckInk_Implementation(const TArray<FColor>& aColorsToCount)
 {
 	if (!mpInkedSurfaceTexture) return;
 	mInkValues.Empty();
-	SamplePixels(aColorsToCount);
+	RPC_Server_SamplePixels(aColorsToCount);
 }
 
-void ALevelComponents::SamplePixels(TArray<FColor>& ColorsToCount)
+void ALevelComponents::RPC_Server_SamplePixels_Implementation(const TArray<FColor>& ColorsToCount)
 {
 	int SampleSize = FMath::CeilToInt(mpInkedSurfaceTexture->SizeX * mpInkedSurfaceTexture->SizeY * 0.25f);
 	FReadSurfaceDataFlags ReadPixelFlags(RCM_UNorm);
 	TArray<FColor> OutBMP;
 	mpInkedSurfaceTexture->GameThread_GetRenderTargetResource()->ReadPixels(OutBMP, ReadPixelFlags);
-	CountColors(ColorsToCount, SampleSize, OutBMP);
+	RPC_Server_CountColors(ColorsToCount, SampleSize, OutBMP);
 }
 
-void ALevelComponents::CountColors(TArray<FColor>& ColorsToCount, int aSampleSize, TArray<FColor>& OutBMP)
+void ALevelComponents::RPC_Server_CountColors_Implementation(const TArray<FColor>& ColorsToCount, int aSampleSize, const TArray<FColor>& OutBMP)
 {
-	InitializeResultArray(ColorsToCount);
+	RPC_Server_InitializeResultArray(ColorsToCount);
 	FRandomStream RandStream;
 	for (int i = 0; i < aSampleSize; ++i)
 	{
@@ -69,7 +93,7 @@ void ALevelComponents::CountColors(TArray<FColor>& ColorsToCount, int aSampleSiz
 	}
 }
 
-void ALevelComponents::InitializeResultArray(TArray<FColor> aColorsToCount)
+void ALevelComponents::RPC_Server_InitializeResultArray_Implementation(const TArray<FColor>& aColorsToCount)
 {
 	for (int i = 0; i < aColorsToCount.Num(); ++i)
 	{
@@ -77,42 +101,52 @@ void ALevelComponents::InitializeResultArray(TArray<FColor> aColorsToCount)
 	}
 }
 
-void ALevelComponents::PaintAtPosition(AInkBullets* aInkBullet, FHitResult aHitResult)
+void ALevelComponents::RPC_Server_PaintAtPosition_Implementation(AInkBullets* aInkBullet, FHitResult aHitResult)
 {
 	if(!IsValid(mpBrushDynMaterial)) return;
-	SetBrushParameters(aInkBullet, aHitResult);
-	UKismetRenderingLibrary::DrawMaterialToRenderTarget(this, mpInkedSurfaceTexture, mpBrushDynMaterial);
-}
-
-void ALevelComponents::SetBrushParameters(AInkBullets* aInkBullet, FHitResult aHitResult)
-{
+	
+	// Set Brush Parameters
 	FVector2D UV(0.f, 0.f);
 	UGameplayStatics::FindCollisionUV(aHitResult, 0, UV);
 	const FLinearColor color = FLinearColor(UV.X, UV.Y, 0.0f, 0.0f);
 	mpBrushDynMaterial->SetVectorParameterValue(TEXT("BrushPosition"), color);
 	mpBrushDynMaterial->SetScalarParameterValue(TEXT("BrushSize"), aInkBullet->mPaintSize);
 	mpBrushDynMaterial->SetScalarParameterValue(TEXT("BrushStrength"), 1.0f);
-	SetBrushSplashAndTexture();
-	SetBrushColor(aInkBullet);
-}
 
-void ALevelComponents::SetBrushSplashAndTexture()
-{
+	// Setup Brush Splash and Texture
 	float splash = FMath::RandRange(0.0f, 100.0f);
 	mpBrushDynMaterial->SetScalarParameterValue(TEXT("Patron"), splash);
 	mpBrushDynMaterial->SetTextureParameterValue(TEXT("SplashTexture"), mpSplashTextures[FMath::RandRange(0, mpSplashTextures.Num() - 1)]);
-}
 
-void ALevelComponents::SetBrushColor(AInkBullets* aInkBullet)
+	// Set Brush Color
+	FLinearColor brushColor = aInkBullet->mpOwnerTeam == ETeam::TEAM1 ? FLinearColor(1.0f, 0.0f, 0.0f, 1.0f) : FLinearColor(0.0f, 0.0f, 1.0f, 1.0f);
+	mpBrushDynMaterial->SetVectorParameterValue(TEXT("BrushColor"), brushColor);
+	
+	UKismetRenderingLibrary::DrawMaterialToRenderTarget(this, mpInkedSurfaceTexture, mpBrushDynMaterial);
+
+	RPC_PaintAtPosition(aInkBullet, aHitResult);
+}
+void ALevelComponents::RPC_PaintAtPosition_Implementation(AInkBullets* aInkBullet, FHitResult aHitResult)
 {
-	if (aInkBullet->mpOwnerTeam == ETeam::TEAM1)
-	{
-		mpBrushDynMaterial->SetVectorParameterValue(TEXT("BrushColor"), FLinearColor(1.0f, 0.0f, 0.0f, 1.0f));
-	}
-	else
-	{
-		mpBrushDynMaterial->SetVectorParameterValue(TEXT("BrushColor"), FLinearColor(0.0f, 0.0f, 1.0f, 1.0f));
-	}
+	if(!IsValid(mpBrushDynMaterial)) return;
+	// Set Brush Parameters
+	FVector2D UV(0.f, 0.f);
+	UGameplayStatics::FindCollisionUV(aHitResult, 0, UV);
+	const FLinearColor color = FLinearColor(UV.X, UV.Y, 0.0f, 0.0f);
+	mpBrushDynMaterial->SetVectorParameterValue(TEXT("BrushPosition"), color);
+	mpBrushDynMaterial->SetScalarParameterValue(TEXT("BrushSize"), aInkBullet->mPaintSize);
+	mpBrushDynMaterial->SetScalarParameterValue(TEXT("BrushStrength"), 1.0f);
+
+	// Setup Brush Splash and Texture
+	float splash = FMath::RandRange(0.0f, 100.0f);
+	mpBrushDynMaterial->SetScalarParameterValue(TEXT("Patron"), splash);
+	mpBrushDynMaterial->SetTextureParameterValue(TEXT("SplashTexture"), mpSplashTextures[FMath::RandRange(0, mpSplashTextures.Num() - 1)]);
+
+	// Set Brush Color
+	FLinearColor brushColor = aInkBullet->mpOwnerTeam == ETeam::TEAM1 ? FLinearColor(1.0f, 0.0f, 0.0f, 1.0f) : FLinearColor(0.0f, 0.0f, 1.0f, 1.0f);
+	mpBrushDynMaterial->SetVectorParameterValue(TEXT("BrushColor"), brushColor);
+	
+	UKismetRenderingLibrary::DrawMaterialToRenderTarget(this, mpInkedSurfaceTexture, mpBrushDynMaterial);
 }
 
 bool ALevelComponents::CheckInkAtPosition(AInkPlayerCharacter* aInkPlayer, FHitResult aHitResult)
@@ -121,6 +155,18 @@ bool ALevelComponents::CheckInkAtPosition(AInkPlayerCharacter* aInkPlayer, FHitR
 	UGameplayStatics::FindCollisionUV(aHitResult, 0, UV);
 	FLinearColor color = UKismetRenderingLibrary::ReadRenderTargetRawUV(this, mpInkedSurfaceTexture, UV.X, UV.Y);
 	return IsColorMatch(aInkPlayer, color);
+}
+
+void ALevelComponents::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ALevelComponents, mpBrushMaterial);
+	DOREPLIFETIME(ALevelComponents, mpBrushDynMaterial);
+	DOREPLIFETIME(ALevelComponents, mpSurfaceMaterial);
+	DOREPLIFETIME(ALevelComponents, mpInkedSurfaceTexture);
+	DOREPLIFETIME(ALevelComponents, mpSplashTextures);
+	DOREPLIFETIME(ALevelComponents, mInkValues);
 }
 
 bool ALevelComponents::IsColorMatch(AInkPlayerCharacter* aInkPlayer, FLinearColor color)
