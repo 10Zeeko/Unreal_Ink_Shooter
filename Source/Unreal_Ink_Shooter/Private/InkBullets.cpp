@@ -71,6 +71,8 @@ FCollisionQueryParams AInkBullets::GetTraceCollisionParams()
 
 void AInkBullets::PaintAtPosition(TArray<FHitResult>& bulletHit)
 {
+	if (!HasAuthority()) return;
+	
 	for (FHitResult& Hit : bulletHit)
 	{
 		if (Hit.bBlockingHit)

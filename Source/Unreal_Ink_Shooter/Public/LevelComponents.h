@@ -14,25 +14,25 @@ public:
 	// Sets default values for this actor's properties
 	ALevelComponents();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* mpStaticMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTextureRenderTarget2D* mpInkedSurfaceTexture;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMaterial* mpSurfaceMaterial;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMaterial* mpBrushMaterial;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<UTexture2D*> mpSplashTextures;
 
 	UPROPERTY(Replicated)
 	TArray<int> mInkValues;
 
-	UPROPERTY(Replicated)
+	UPROPERTY()
 	UMaterialInstanceDynamic* mpBrushDynMaterial;
 
 	UFUNCTION(Server, Reliable)
@@ -47,26 +47,19 @@ public:
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	virtual void RPC_Server_PaintAtPosition(AInkBullets* aInkBullet, FHitResult aHitResult);
 	UFUNCTION(NetMulticast, Reliable)
-	void RPC_PaintAtPosition(AInkBullets* aInkBullet, FHitResult aHitResult);
+	void RPC_PaintAtPosition(AInkBullets* aInkBullet, const FLinearColor& aColor, float aSplash, int aSplashTextureIndex);
 	bool IsColorMatch(AInkPlayerCharacter* aInkPlayer, FLinearColor aColor);
+	
+	
 	UFUNCTION(BlueprintCallable)
 	virtual bool CheckInkAtPosition(AInkPlayerCharacter* aInkPlayer, FHitResult aHitResult);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 protected:
-	UFUNCTION(Server, Reliable)
-	void RPC_Server_SetUpInkedSurfaceTexture(UMaterialInstanceDynamic* aInkedSurfaceMaterial);
-	UFUNCTION(NetMulticast, Reliable)
-	void RPC_SetUpInkedSurfaceTexture(UMaterialInstanceDynamic* aInkedSurfaceMaterial);
+	void SetUpInkedSurfaceTexture(UMaterialInstanceDynamic* aInkedSurfaceMaterial);
 	
-	UFUNCTION(Server, Reliable)
-	void RPC_Server_SetUpBrushMaterial();
-	UFUNCTION(NetMulticast, Reliable)
-	void RPC_SetUpBrushMaterial();
-	UFUNCTION(Server, Reliable)
-	void RPC_Server_SetUpMaterials();
-	UFUNCTION(NetMulticast, Reliable)
-	void RPC_SetUpMaterials();
+	void SetUpBrushMaterial();
+	void SetUpMaterials();
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 };
