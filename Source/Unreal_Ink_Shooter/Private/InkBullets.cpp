@@ -4,6 +4,7 @@
 #include "Components/SphereComponent.h"
 #include "Kismet/BlueprintMapLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Net/UnrealNetwork.h"
 #include "Unreal_Ink_Shooter/Public/Utils.h"
 
 AInkBullets::AInkBullets()
@@ -93,4 +94,9 @@ void AInkBullets::OnOverlapBegin(UPrimitiveComponent* newComp, AActor* OtherActo
 	{
 		DetectHitInSurface(OtherActor->GetTransform());
 	}
+}
+
+void AInkBullets::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	DOREPLIFETIME(AInkBullets, mpOwnerTeam);
 }

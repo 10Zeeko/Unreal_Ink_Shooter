@@ -91,40 +91,11 @@ void ALevelComponents::RPC_Server_PaintAtPosition_Implementation(AInkBullets* aI
 	RPC_PaintAtPosition(aInkBullet, color, splash, SplashIndex);
 }
 
-
-// void ALevelComponents::RPC_PaintAtPosition_Implementation(AInkBullets* aInkBullet, FHitResult aHitResult)
-// {
-// 	if(!GetLocalRole() == ROLE_None) return;
-// 	if(!IsValid(mpBrushDynMaterial)) return;
-//
-// 	if(auto* pController = UGameplayStatics::GetPlayerController(GetWorld(), 0))
-// 	{
-// 		[[maybe_unused]] auto Cosa = pController->GetName();
-// 	}
-// 	
-// 	// Set Brush Parameters
-// 	FVector2D UV(0.f, 0.f);
-// 	UGameplayStatics::FindCollisionUV(aHitResult, 0, UV);
-// 	const FLinearColor color = FLinearColor(UV.X, UV.Y, 0.0f, 0.0f);
-// 	mpBrushDynMaterial->SetVectorParameterValue(TEXT("BrushPosition"), color);
-// 	mpBrushDynMaterial->SetScalarParameterValue(TEXT("BrushSize"), aInkBullet->mPaintSize);
-// 	mpBrushDynMaterial->SetScalarParameterValue(TEXT("BrushStrength"), 1.0f);
-//
-// 	// Setup Brush Splash and Texture
-// 	float splash = FMath::RandRange(0.0f, 100.0f);
-// 	mpBrushDynMaterial->SetScalarParameterValue(TEXT("Patron"), splash);
-// 	mpBrushDynMaterial->SetTextureParameterValue(TEXT("SplashTexture"), mpSplashTextures[FMath::RandRange(0, mpSplashTextures.Num() - 1)]);
-//
-// 	// Set Brush Color
-// 	FLinearColor brushColor = aInkBullet->mpOwnerTeam == ETeam::TEAM1 ? FLinearColor(1.0f, 0.0f, 0.0f, 1.0f) : FLinearColor(0.0f, 0.0f, 1.0f, 1.0f);
-// 	mpBrushDynMaterial->SetVectorParameterValue(TEXT("BrushColor"), brushColor);
-// 	
-// 	UKismetRenderingLibrary::DrawMaterialToRenderTarget(this, mpInkedSurfaceTexture, mpBrushDynMaterial);
-// }
-
 void ALevelComponents::RPC_PaintAtPosition_Implementation(AInkBullets* aInkBullet, const FLinearColor& aColor, float aSplash, int aSplashTextureIndex)
 {
 	if(!IsValid(mpBrushDynMaterial)) return;
+	if (!IsValid(aInkBullet)) return;
+	
 	// Set Brush Parameters
 	mpBrushDynMaterial->SetVectorParameterValue(TEXT("BrushPosition"), aColor);
 	mpBrushDynMaterial->SetScalarParameterValue(TEXT("BrushSize"), aInkBullet->mPaintSize);

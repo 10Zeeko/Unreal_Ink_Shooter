@@ -318,6 +318,8 @@ void AInkPlayerCharacter::RPC_Server_SetupPlayerWeapon_Implementation()
 
 void AInkPlayerCharacter::RPC_SetupPlayerWeapon_Implementation()
 {
+	if (!HasAuthority()) return;
+	if (mCurrentWeapon) return;
 	FActorSpawnParameters spawnParams;
 	spawnParams.Owner = this;
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
