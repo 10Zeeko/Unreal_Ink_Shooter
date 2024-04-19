@@ -119,7 +119,7 @@ void AInkPlayerCharacter::RPC_Server_DisableSwimming_Implementation()
 	RPC_DisableSwimming();
 	playerState = EPlayer::IDLE;
 	GetWorld()->GetTimerManager().ClearTimer(mIsInInkTimerHandle);
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
 	mpShipMesh->SetHiddenInGame(true);
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
 	GetCharacterMovement()->bOrientRotationToMovement = true;

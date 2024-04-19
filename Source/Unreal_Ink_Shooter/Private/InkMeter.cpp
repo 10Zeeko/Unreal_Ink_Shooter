@@ -22,19 +22,12 @@ void AInkMeter::RPC_Server_CheckInkFromLevelComponents_Implementation()
 			BlueTeamInk += levelC->mInkValues[1];
 		}
 	}
-
-	RPC_CheckInkFromLevelComponents(RedTeamInk, BlueTeamInk);
+	evOnUpdateInkMeter.Broadcast(RedTeamInk, BlueTeamInk);
 }
 
 void AInkMeter::RPC_CheckInkFromLevelComponents_Implementation(float aRedTeamInk, float aBlueTeamInk)
 {
-	for (APlayerHud* playerHud : mpPlayerHuds)
-	{
-		if (playerHud)
-		{
-			playerHud->evOnUpdateInkMeter.Broadcast(aRedTeamInk, aBlueTeamInk);
-		}
-	}
+	evOnUpdateInkMeter.Broadcast(aRedTeamInk, aBlueTeamInk);
 }
 
 void AInkMeter::BeginPlay()
@@ -52,19 +45,6 @@ void AInkMeter::RPC_Server_FindAllLevelComponents_Implementation()
 	for (AActor* levelComponent : mLevelComponents)
 	{
 		mpLevelComponents.Add(Cast<ALevelComponents>(levelComponent));
-	}
-
-	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
-	{
-		APlayerController* PlayerController = Iterator->Get();
-		if (PlayerController)
-		{
-			APlayerHud* PlayerHud = Cast<APlayerHud>(PlayerController->GetHUD());
-			if (PlayerHud)
-			{
-				mpPlayerHuds.Add(PlayerHud);
-			}
-		}
 	}
 
 	GetWorld()->GetTimerManager().SetTimer(MCheckTimerHandle, this, &AInkMeter::RPC_Server_CheckInkFromLevelComponents, 5, true);
