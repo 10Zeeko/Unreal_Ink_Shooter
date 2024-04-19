@@ -275,6 +275,18 @@ void AInkPlayerCharacter::RPC_SwimClimbLineTrace_Implementation(bool isInInk)
 	}
 }
 
+void AInkPlayerCharacter::RPC_Server_UpdatePlayerTeam_Implementation(ETeam aNewTeam)
+{
+	playerTeam = aNewTeam;
+	mCurrentWeapon->mPlayerTeam = aNewTeam;
+	RPC_UpdatePlayerTeam(aNewTeam);
+}
+
+void AInkPlayerCharacter::RPC_UpdatePlayerTeam_Implementation(ETeam aNewTeam)
+{
+	playerTeam = aNewTeam;
+	mCurrentWeapon->mPlayerTeam = aNewTeam;
+}
 
 void AInkPlayerCharacter::BeginPlay()
 {

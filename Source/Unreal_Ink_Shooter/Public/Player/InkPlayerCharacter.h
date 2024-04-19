@@ -137,6 +137,12 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void RPC_SwimClimbLineTrace(bool isInInk);
 
+	// Update player team
+	UFUNCTION(Server, Reliable)
+	void RPC_Server_UpdatePlayerTeam(ETeam aNewTeam);
+	UFUNCTION(NetMulticast, Reliable)
+	void RPC_UpdatePlayerTeam(ETeam aNewTeam);
+
 	virtual void BeginPlay() override;
 private:
 	UFUNCTION(Server, Reliable)
