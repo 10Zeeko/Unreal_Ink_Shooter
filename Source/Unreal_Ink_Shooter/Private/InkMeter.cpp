@@ -23,26 +23,25 @@ void AInkMeter::RPC_Server_CheckInkFromLevelComponents_Implementation()
 		}
 	}
 
-	if (mpPlayerHud)
+	RPC_CheckInkFromLevelComponents(RedTeamInk, BlueTeamInk);
+}
+
+void AInkMeter::RPC_CheckInkFromLevelComponents_Implementation(float aRedTeamInk, float aBlueTeamInk)
+{
+	for (APlayerHud* playerHud : mpPlayerHuds)
 	{
-		mpPlayerHud->evOnUpdateInkMeter.Broadcast(RedTeamInk, BlueTeamInk);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("apPlayerHud is null."));
+		if (playerHud)
+		{
+			playerHud->evOnUpdateInkMeter.Broadcast(aRedTeamInk, aBlueTeamInk);
+		}
 	}
 }
 
 void AInkMeter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (mpLevelComponents.Num() == 0)
-	{
-		RPC_Server_FindAllLevelComponents();
-	}
-	mpPlayerHud = Cast<APlayerHud>(UGameplayStatics::GetPlayerController(this, 0)->GetHUD());
-	GetWorld()->GetTimerManager().SetTimer(MCheckTimerHandle, this, &AInkMeter::RPC_Server_CheckInkFromLevelComponents, 5, true);
+	
+	RPC_Server_FindAllLevelComponents();
 }
 
 void AInkMeter::RPC_Server_FindAllLevelComponents_Implementation()
@@ -54,4 +53,19 @@ void AInkMeter::RPC_Server_FindAllLevelComponents_Implementation()
 	{
 		mpLevelComponents.Add(Cast<ALevelComponents>(levelComponent));
 	}
+
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		APlayerController* PlayerController = Iterator->Get();
+		if (PlayerController)
+		{
+			APlayerHud* PlayerHud = Cast<APlayerHud>(PlayerController->GetHUD());
+			if (PlayerHud)
+			{
+				mpPlayerHuds.Add(PlayerHud);
+			}
+		}
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(MCheckTimerHandle, this, &AInkMeter::RPC_Server_CheckInkFromLevelComponents, 5, true);
 }

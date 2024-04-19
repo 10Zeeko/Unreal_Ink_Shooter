@@ -149,6 +149,7 @@ void AInkPlayerCharacter::RPC_Server_checkIfPlayerIsInInk_Implementation()
 		traceCollisionParams.bReturnFaceIndex = true;
 
 		FHitResult checkSurfaceHit;
+		bIsInInk = false;
 
 		GetWorld()->LineTraceSingleByChannel(
 			checkSurfaceHit,
@@ -179,8 +180,8 @@ void AInkPlayerCharacter::RPC_Server_checkIfPlayerIsInInk_Implementation()
 				}
 			}
 		}
-		RPC_checkIfPlayerIsInInk(bIsInInk);
 	}
+	RPC_checkIfPlayerIsInInk(bIsInInk);
 	RPC_Server_SwimClimbLineTrace();
 }
 

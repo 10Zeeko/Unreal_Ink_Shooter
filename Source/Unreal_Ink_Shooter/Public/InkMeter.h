@@ -19,13 +19,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<ALevelComponents*> mpLevelComponents;
 
+	UPROPERTY()
 	FTimerHandle MCheckTimerHandle;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	APlayerHud* mpPlayerHud;
+	TArray<APlayerHud*> mpPlayerHuds;
 
 	UFUNCTION(Server, Unreliable)
 	void RPC_Server_CheckInkFromLevelComponents();
+	UFUNCTION(NetMulticast, Unreliable)
+	void RPC_CheckInkFromLevelComponents(float aRedTeamInk, float aBlueTeamInk);
 protected:
 	UFUNCTION(Server, Reliable)
 	void RPC_Server_FindAllLevelComponents();
