@@ -8,7 +8,6 @@
 #include "Components/ArrowComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
-#include "Unreal_Ink_Shooter/Public/Utils.h"
 #include "Weapons/Weapon.h"
 
 AInkPlayerCharacter::AInkPlayerCharacter()

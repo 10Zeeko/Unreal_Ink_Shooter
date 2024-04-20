@@ -5,11 +5,11 @@
 #include "Kismet/BlueprintMapLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
-#include "Unreal_Ink_Shooter/Public/Utils.h"
 
 AInkBullets::AInkBullets()
 {
 	bReplicates = true;
+	PrimaryActorTick.bCanEverTick = true;
 	mpArrowForward = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowForward"));
 	mpArrowForward->SetupAttachment(RootComponent);
 
@@ -25,11 +25,15 @@ AInkBullets::AInkBullets()
 	mColorsToCheck = { FColor(255, 0, 0), FColor(0, 0, 255) };
 	
 	mpProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
+	mpProjectileMovementComponent->bRotationFollowsVelocity = true;
 }
 
 void AInkBullets::BeginPlay()
 {
 	Super::BeginPlay();
+	mpDynMaterial = UMaterialInstanceDynamic::Create(mpMaterial, this);
+	mpSphereComponent->SetMaterial(0, mpDynMaterial);
+	GetWorld()->GetTimerManager().SetTimer(MDestroyBulletTimerHandle, this, &AInkBullets::DestroyBullet, 5.0f, false);
 }
 
 void AInkBullets::DetectHitInSurface(FTransform aOverlappedActorTransform)
@@ -99,4 +103,16 @@ void AInkBullets::OnOverlapBegin(UPrimitiveComponent* newComp, AActor* OtherActo
 void AInkBullets::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	DOREPLIFETIME(AInkBullets, mpOwnerTeam);
+}
+
+void AInkBullets::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	mpDynMaterial->SetVectorParameterValue(TEXT("Direction"), mpSphereComponent->GetForwardVector() * -1.0f);
+}
+
+void AInkBullets::DestroyBullet()
+{
+	Destroy();
 }
