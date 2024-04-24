@@ -3,8 +3,10 @@
 #include "Components/ArrowComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/BlueprintMapLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
+#include "Unreal_Ink_Shooter/Public/Utils.h"
 
 AInkBullets::AInkBullets()
 {
@@ -98,6 +100,13 @@ void AInkBullets::OnOverlapBegin(UPrimitiveComponent* newComp, AActor* OtherActo
 	if (ALevelComponents* levelComponents = Cast<ALevelComponents>(OtherActor))
 	{
 		DetectHitInSurface(OtherActor->GetTransform());
+	}
+	else if (AInkPlayerCharacter* inkPlayerCharacter = Cast<AInkPlayerCharacter>(OtherActor))
+	{
+		ScreenD(*OtherActor->GetName());
+		if (inkPlayerCharacter->playerTeam == mpOwnerTeam) return;
+		
+		UGameplayStatics::ApplyDamage(inkPlayerCharacter, mDamage, nullptr, this, UDamageType::StaticClass());
 	}
 }
 

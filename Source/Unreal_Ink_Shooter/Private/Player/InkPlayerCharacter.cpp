@@ -8,6 +8,7 @@
 #include "Components/ArrowComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
+#include "Unreal_Ink_Shooter/Public/Utils.h"
 #include "Weapons/Weapon.h"
 
 AInkPlayerCharacter::AInkPlayerCharacter()
@@ -103,6 +104,7 @@ void AInkPlayerCharacter::RPC_Server_EnableSwimming_Implementation()
 	mpPlayerMesh->SetHiddenInGame(true);
 	mpShipMesh->SetHiddenInGame(false);
 	mCurrentWeapon->RPC_Server_PlayerSwimming();
+	RPC_Server_UpdatePlayerTeam(ETeam::TEAM2);
 }
 
 void AInkPlayerCharacter::RPC_EnableSwimming_Implementation()
@@ -111,7 +113,6 @@ void AInkPlayerCharacter::RPC_EnableSwimming_Implementation()
 	mCurrentWeapon->RPC_Server_PlayerSwimming();
 	mpShipMesh->SetHiddenInGame(false);
 }
-
 
 void AInkPlayerCharacter::RPC_Server_DisableSwimming_Implementation()
 {
@@ -302,6 +303,23 @@ void AInkPlayerCharacter::BeginPlay()
 	{
 		RPC_Server_SetupPlayerWeapon();
 	}
+}
+
+float AInkPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	ScreenD("HP: %f");
+
+	if(auto* Con {GetController()})
+		mPlayerState = Cast<AInkPlayerState>(Con->PlayerState);
+	
+	if (mPlayerState)
+	{
+		mPlayerState->PlayerDamaged(DamageAmount);
+	
+		ScreenD(Format1("HP: %f", mPlayerState->mHP));
+	}
+	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 
 void AInkPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

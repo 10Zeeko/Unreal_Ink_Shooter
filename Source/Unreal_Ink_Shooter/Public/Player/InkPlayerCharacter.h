@@ -1,20 +1,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InkPlayerState.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "InkPlayerCharacter.generated.h"
 
 class AWeapon;
-
-UENUM(BlueprintType)
-enum class ETeam
-{
-	NONE = 0 UMETA(DisplayName = "None"),
-	TEAM1 UMETA(DisplayName = "Team 1"),
-	TEAM2 UMETA(DisplayName = "Team 2"),
-	TEAM3 UMETA(DisplayName = "Team 3")
-};
 
 UENUM()
 enum class EPlayer
@@ -91,6 +83,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated)
 	bool bIsShooting;
 
+	UPROPERTY()
+	AInkPlayerState* mPlayerState;
+
 	virtual void Tick(float DeltaTime) override;
 	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -144,6 +139,8 @@ protected:
 	void RPC_UpdatePlayerTeam(ETeam aNewTeam);
 
 	virtual void BeginPlay() override;
+
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 private:
 	UFUNCTION(Server, Reliable)
 	void RPC_Server_SetupPlayerWeapon();
