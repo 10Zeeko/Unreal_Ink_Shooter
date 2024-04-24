@@ -32,6 +32,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=mWEAPON, Replicated) 
 	UDataTable* mWeaponsDB;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=mWEAPON, Replicated)
+	FVector mBulletSpawnPoint = FVector(0.0f, 0.0f, 0.0f);
+
 	void SetupPlayerWeapon();
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=mWEAPON, Replicated) 

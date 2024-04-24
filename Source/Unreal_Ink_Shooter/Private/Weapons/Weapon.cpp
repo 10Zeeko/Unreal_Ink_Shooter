@@ -61,13 +61,15 @@ void AWeapon::RPC_Server_PrepareForShooting_Implementation(UCameraComponent* aFo
 	CameraForwardVector.Normalize();
 
 	FRotator NewRotation = UKismetMathLibrary::MakeRotFromX(CameraForwardVector);
-	FVector SpawnLocation = GetActorLocation();
 
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.Owner = GetOwner();
 	SpawnParameters.Instigator = GetInstigator();
 	
-	mInkBullet = GetWorld()->SpawnActor<AInkBullets>(mBulletBP, SpawnLocation, NewRotation);
+	FTransform ActorWorldTransform = GetActorTransform();
+	FVector WorldSpawnLocation = ActorWorldTransform.TransformPosition(mBulletSpawnPoint);
+	mInkBullet = GetWorld()->SpawnActor<AInkBullets>(mBulletBP, WorldSpawnLocation, NewRotation);
+
 	mInkBullet->mpOwnerTeam = mPlayerTeam;
 	aPlayerCharacterMovement->RotationRate = FRotator(0.0f, 1800.0f, 00.0f);
 	aPlayerCharacterMovement->bOrientRotationToMovement = false;
@@ -126,4 +128,5 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	DOREPLIFETIME(AWeapon, mpArrowForward);
 	DOREPLIFETIME(AWeapon, mInkBullet);
 	DOREPLIFETIME(AWeapon, mPlayerTeam);
+	DOREPLIFETIME(AWeapon, mBulletSpawnPoint);
 }
