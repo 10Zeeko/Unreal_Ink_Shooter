@@ -44,6 +44,8 @@ public:
 	UMaterial* mpMaterial;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMaterialInstanceDynamic* mpDynMaterial;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FLinearColor mBrushColor;
 
 	FRotator GetLookAtRotation(const FTransform aTransform);
 	FCollisionQueryParams GetTraceCollisionParams();
@@ -64,6 +66,8 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	UFUNCTION()
 	void DestroyBullet();
+
+	void UpdateColor();
 
 protected:
 	// Called when the game starts or when spawned

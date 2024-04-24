@@ -71,6 +71,7 @@ void AWeapon::RPC_Server_PrepareForShooting_Implementation(UCameraComponent* aFo
 	mInkBullet = GetWorld()->SpawnActor<AInkBullets>(mBulletBP, WorldSpawnLocation, NewRotation);
 
 	mInkBullet->mpOwnerTeam = mPlayerTeam;
+	mInkBullet->UpdateColor();
 	aPlayerCharacterMovement->RotationRate = FRotator(0.0f, 1800.0f, 00.0f);
 	aPlayerCharacterMovement->bOrientRotationToMovement = false;
 	aPlayerCharacterMovement->bUseControllerDesiredRotation = true;

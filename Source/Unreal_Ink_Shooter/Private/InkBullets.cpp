@@ -33,6 +33,7 @@ void AInkBullets::BeginPlay()
 	Super::BeginPlay();
 	mpDynMaterial = UMaterialInstanceDynamic::Create(mpMaterial, this);
 	mpSphereComponent->SetMaterial(0, mpDynMaterial);
+	
 	GetWorld()->GetTimerManager().SetTimer(MDestroyBulletTimerHandle, this, &AInkBullets::DestroyBullet, 5.0f, false);
 }
 
@@ -115,4 +116,10 @@ void AInkBullets::Tick(float DeltaSeconds)
 void AInkBullets::DestroyBullet()
 {
 	Destroy();
+}
+
+void AInkBullets::UpdateColor()
+{
+	mBrushColor = mpOwnerTeam == ETeam::TEAM1 ? FLinearColor(1.0f, 0.0f, 0.0f, 1.0f) : FLinearColor(0.0f, 0.0f, 1.0f, 1.0f);
+	mpDynMaterial->SetVectorParameterValue(TEXT("TeamColor"), mBrushColor);
 }
