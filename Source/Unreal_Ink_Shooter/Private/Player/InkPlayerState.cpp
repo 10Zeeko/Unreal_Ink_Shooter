@@ -12,4 +12,5 @@ void AInkPlayerState::BeginPlay()
 	mPlayerInk = mMaxInk;
 	mKills = 0;
 	mDeaths = 0;
+	mPlayerTeam = ETeam::TEAM1;
 }

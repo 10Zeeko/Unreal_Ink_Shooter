@@ -303,15 +303,13 @@ void AInkPlayerCharacter::BeginPlay()
 	{
 		RPC_Server_SetupPlayerWeapon();
 	}
+	GetWorld()->GetTimerManager().SetTimer(mGetPlayerStateHandle, this, &AInkPlayerCharacter::GetPlayerState, 0.1, false);
 }
 
 float AInkPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	AActor* DamageCauser)
 {
 	ScreenD("HP: %f");
-
-	if(auto* Con {GetController()})
-		mPlayerState = Cast<AInkPlayerState>(Con->PlayerState);
 	
 	if (mPlayerState)
 	{
@@ -332,7 +330,6 @@ void AInkPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(AInkPlayerCharacter, mpArrowDown);
 	DOREPLIFETIME(AInkPlayerCharacter, mpClimbArrow);
 	DOREPLIFETIME(AInkPlayerCharacter, InkBullet);
-	DOREPLIFETIME(AInkPlayerCharacter, playerTeam);
 	DOREPLIFETIME(AInkPlayerCharacter, selectedWeapon);
 	DOREPLIFETIME(AInkPlayerCharacter, bIsShooting);
 	DOREPLIFETIME(AInkPlayerCharacter, bIsClimbing);
@@ -363,6 +360,12 @@ void AInkPlayerCharacter::RPC_SetupPlayerWeapon_Implementation()
 	}
 }
 
+
+void AInkPlayerCharacter::GetPlayerState()
+{
+	if(auto* inkController {GetController()})
+		mPlayerState = Cast<AInkPlayerState>(inkController->PlayerState);
+}
 
 void AInkPlayerCharacter::Tick(float DeltaTime)
 {

@@ -85,6 +85,9 @@ public:
 
 	UPROPERTY()
 	AInkPlayerState* mPlayerState;
+	FTimerHandle mGetPlayerStateHandle;
+
+	void GetPlayerState();
 
 	virtual void Tick(float DeltaTime) override;
 	
