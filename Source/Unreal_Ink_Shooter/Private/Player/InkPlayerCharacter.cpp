@@ -340,11 +340,6 @@ void AInkPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 void AInkPlayerCharacter::RPC_Server_SetupPlayerWeapon_Implementation()
 {
-	RPC_SetupPlayerWeapon();
-}
-
-void AInkPlayerCharacter::RPC_SetupPlayerWeapon_Implementation()
-{
 	if (!HasAuthority()) return;
 	if (mCurrentWeapon) return;
 	FActorSpawnParameters spawnParams;
@@ -359,7 +354,6 @@ void AInkPlayerCharacter::RPC_SetupPlayerWeapon_Implementation()
 		mCurrentWeapon->mPlayerTeam = playerTeam;
 	}
 }
-
 
 void AInkPlayerCharacter::GetPlayerState()
 {

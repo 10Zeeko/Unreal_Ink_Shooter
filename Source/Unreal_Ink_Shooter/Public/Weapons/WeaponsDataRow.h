@@ -36,4 +36,6 @@ struct FWeaponsDataRow : public FTableRowBase
 	float FireRate;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Dispersion;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float InkConsumption;
 };

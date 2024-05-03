@@ -36,6 +36,7 @@ void AWeapon::SetupPlayerWeapon()
 	mFireRate = aWeapon->FireRate;
 	mDispersion = aWeapon->Dispersion;
 	mBulletBP = aWeapon->BulletBP;
+	mInkConsumption = aWeapon->InkConsumption;
 }
 
 void AWeapon::RPC_Server_PlayerSwimming_Implementation()
@@ -133,4 +134,9 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	DOREPLIFETIME(AWeapon, mInkBullet);
 	DOREPLIFETIME(AWeapon, mPlayerTeam);
 	DOREPLIFETIME(AWeapon, mBulletSpawnPoint);
+	DOREPLIFETIME(AWeapon, mDamage);
+	DOREPLIFETIME(AWeapon, mRange);
+	DOREPLIFETIME(AWeapon, mFireRate);
+	DOREPLIFETIME(AWeapon, mDispersion);
+	DOREPLIFETIME(AWeapon, mInkConsumption);
 }

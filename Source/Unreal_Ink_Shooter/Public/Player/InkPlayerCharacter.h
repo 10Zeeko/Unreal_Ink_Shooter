@@ -147,8 +147,6 @@ protected:
 private:
 	UFUNCTION(Server, Reliable)
 	void RPC_Server_SetupPlayerWeapon();
-	UFUNCTION(NetMulticast, Reliable)
-	void RPC_SetupPlayerWeapon();
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

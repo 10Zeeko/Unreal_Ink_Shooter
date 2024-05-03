@@ -47,6 +47,8 @@ public:
 	float mFireRate {0.0f};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=mWEAPON, Replicated) 
 	float mDispersion {0.0f};
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=mWEAPON, Replicated) 
+	float mInkConsumption {0.0f};
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated) 
 	ETeam mPlayerTeam {ETeam::NONE};
