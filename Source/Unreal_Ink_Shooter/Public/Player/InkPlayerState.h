@@ -20,6 +20,8 @@ class UNREAL_INK_SHOOTER_API AInkPlayerState : public APlayerState
 {
 	GENERATED_BODY()
 public:
+	AInkPlayerState();
+	
 	UPROPERTY(VisibleAnywhere)
 	float mHP;
 	UPROPERTY(BlueprintReadWrite)
@@ -28,6 +30,15 @@ public:
 	float mPlayerInk;
 	UPROPERTY(BlueprintReadWrite)
 	float mMaxInk = 100.0f;
+	UPROPERTY()
+	float mWeaponConsumption = 10.0f;
+	UPROPERTY()
+	float mInkRegeneration = 2.0f;
+	UPROPERTY()
+	int mInkMultiplier = 1;
+
+	UPROPERTY()
+	bool bIsShooting;
 
 	UPROPERTY()
 	int mKills;
@@ -39,6 +50,9 @@ public:
 
 	void PlayerDamaged(float aDamage);
 
+	void PlayerSwimming(float aInkAmount);
+
 protected:
 	void BeginPlay() override;
+	void Tick(float DeltaTime);
 };

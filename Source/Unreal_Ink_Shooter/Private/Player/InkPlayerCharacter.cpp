@@ -70,7 +70,11 @@ void AInkPlayerCharacter::Look(const FInputActionValue& Value)
 
 void AInkPlayerCharacter::RPC_Server_Shoot_Implementation(const FInputActionValue& Value)
 {
-	RPC_Shoot(Value);
+	if (playerState != EPlayer::SWIMMING && mPlayerState->mPlayerInk > 0)
+	{
+		mPlayerState->bIsShooting = true;
+		RPC_Shoot(Value);
+	}
 }
 
 void AInkPlayerCharacter::RPC_Shoot_Implementation(const FInputActionValue& Value)
@@ -84,6 +88,7 @@ void AInkPlayerCharacter::RPC_Shoot_Implementation(const FInputActionValue& Valu
 
 void AInkPlayerCharacter::RPC_Server_ResetValues_Implementation()
 {
+	mPlayerState->bIsShooting = false;
 	RPC_ResetValues();
 }
 
@@ -117,6 +122,7 @@ void AInkPlayerCharacter::RPC_EnableSwimming_Implementation()
 void AInkPlayerCharacter::RPC_Server_DisableSwimming_Implementation()
 {
 	RPC_DisableSwimming();
+	mPlayerState->mInkMultiplier = 1.0f;
 	playerState = EPlayer::IDLE;
 	GetWorld()->GetTimerManager().ClearTimer(mIsInInkTimerHandle);
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
@@ -171,11 +177,13 @@ void AInkPlayerCharacter::RPC_Server_checkIfPlayerIsInInk_Implementation()
 				if (bIsInInk)
 				{
 					GetCharacterMovement()->MaxWalkSpeed = 1200.f;
+					mPlayerState->mInkMultiplier = 8.0f;
 					mpShipMesh->SetHiddenInGame(true);
 				}
 				else
 				{
 					GetCharacterMovement()->MaxWalkSpeed = 300.f;
+					mPlayerState->mInkMultiplier = 1.0f;
 					mpShipMesh->SetHiddenInGame(false);
 				}
 			}
@@ -225,6 +233,7 @@ void AInkPlayerCharacter::RPC_Server_SwimClimbLineTrace_Implementation()
 			bIsInInk = levelComponents->CheckInkAtPosition(this, hit);
 			if (bIsInInk)
 			{
+				mPlayerState->mInkMultiplier = 8.0f;
 				GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
 				GetCharacterMovement()->bOrientRotationToMovement = false;
 				float rot = UKismetMathLibrary::MakeRotFromX(hit.ImpactNormal).Yaw + 180.0f;
@@ -235,6 +244,7 @@ void AInkPlayerCharacter::RPC_Server_SwimClimbLineTrace_Implementation()
 			}
 			else 
 			{
+				mPlayerState->mInkMultiplier = 1.0f;
 				GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
 				GetCharacterMovement()->bOrientRotationToMovement = true;
 				bIsClimbing = false;
@@ -299,10 +309,6 @@ void AInkPlayerCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-	if (IsValid(selectedWeapon))
-	{
-		RPC_Server_SetupPlayerWeapon();
-	}
 	GetWorld()->GetTimerManager().SetTimer(mGetPlayerStateHandle, this, &AInkPlayerCharacter::GetPlayerState, 0.1, false);
 }
 
@@ -352,6 +358,8 @@ void AInkPlayerCharacter::RPC_Server_SetupPlayerWeapon_Implementation()
 		FAttachmentTransformRules attachmentRules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepRelative, EAttachmentRule::KeepWorld, true);
 		mCurrentWeapon->AttachToComponent(GetMesh(), attachmentRules, "WeaponSocket");
 		mCurrentWeapon->mPlayerTeam = playerTeam;
+
+		mPlayerState->mWeaponConsumption = mCurrentWeapon->mInkConsumption;
 	}
 }
 
@@ -359,6 +367,11 @@ void AInkPlayerCharacter::GetPlayerState()
 {
 	if(auto* inkController {GetController()})
 		mPlayerState = Cast<AInkPlayerState>(inkController->PlayerState);
+
+	if (IsValid(selectedWeapon))
+	{
+		RPC_Server_SetupPlayerWeapon();
+	}
 }
 
 void AInkPlayerCharacter::Tick(float DeltaTime)
