@@ -51,6 +51,8 @@ public:
 	
 	UPROPERTY(Replicated) 
 	USkeletalMeshComponent* mpPlayerMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+	UStaticMeshComponent* mpInkMeterMesh;
 
 	// Swim
 	FTimerHandle mIsInInkTimerHandle;

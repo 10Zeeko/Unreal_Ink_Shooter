@@ -38,5 +38,4 @@ void AInkPlayerState::Tick(float DeltaTime)
 		mPlayerInk += mInkRegeneration * mInkMultiplier * DeltaTime;
 	}
 	mPlayerInk = FMath::Clamp(mPlayerInk, 0.0f, mMaxInk);
-	ScreenD( Format1("Ink: %f", mPlayerInk) );
 }

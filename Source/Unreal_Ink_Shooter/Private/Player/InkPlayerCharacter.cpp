@@ -29,11 +29,19 @@ AInkPlayerCharacter::AInkPlayerCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
-	mpShipMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShipMesh"));
 	mpPlayerMesh = GetMesh();
+	
+	mpInkMeterMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InkMeterMesh"));
+	mpInkMeterMesh->SetupAttachment(mpPlayerMesh, TEXT("TankSocket"));
+	
+
+	
+	mpShipMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShipMesh"));
 	mpShipMesh->SetupAttachment(mpPlayerMesh);
+	
 	mpArrowDown = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowDown"));
 	mpArrowDown->SetupAttachment(mpPlayerMesh);
+	
 	mpClimbArrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ClimbArrow"));
 	mpClimbArrow->SetupAttachment(mpPlayerMesh);
 
