@@ -34,8 +34,6 @@ AInkPlayerCharacter::AInkPlayerCharacter()
 	mpInkMeterMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InkMeterMesh"));
 	mpInkMeterMesh->SetupAttachment(mpPlayerMesh, TEXT("TankSocket"));
 	
-
-	
 	mpShipMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShipMesh"));
 	mpShipMesh->SetupAttachment(mpPlayerMesh);
 	
@@ -116,6 +114,7 @@ void AInkPlayerCharacter::RPC_Server_EnableSwimming_Implementation()
 	GetWorld()->GetTimerManager().SetTimer(mIsInInkTimerHandle, this, &AInkPlayerCharacter::RPC_Server_checkIfPlayerIsInInk, 0.1, true);
 	mpPlayerMesh->SetHiddenInGame(true);
 	mpShipMesh->SetHiddenInGame(false);
+	mpInkMeterMesh->SetHiddenInGame(true);
 	mCurrentWeapon->RPC_Server_PlayerSwimming();
 	RPC_Server_UpdatePlayerTeam(ETeam::TEAM2);
 }
@@ -124,6 +123,7 @@ void AInkPlayerCharacter::RPC_EnableSwimming_Implementation()
 {
 	mpPlayerMesh->SetHiddenInGame(true);
 	mCurrentWeapon->RPC_Server_PlayerSwimming();
+	mpInkMeterMesh->SetHiddenInGame(true);
 	mpShipMesh->SetHiddenInGame(false);
 }
 
@@ -135,6 +135,7 @@ void AInkPlayerCharacter::RPC_Server_DisableSwimming_Implementation()
 	GetWorld()->GetTimerManager().ClearTimer(mIsInInkTimerHandle);
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
 	mpShipMesh->SetHiddenInGame(true);
+	mpInkMeterMesh->SetHiddenInGame(false);
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bIsClimbing = false;
@@ -146,6 +147,7 @@ void AInkPlayerCharacter::RPC_DisableSwimming_Implementation()
 	mCurrentWeapon->RPC_Server_PlayerShooting();
 	playerState = EPlayer::IDLE;
 	mpShipMesh->SetHiddenInGame(true);
+	mpInkMeterMesh->SetHiddenInGame(false);
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bIsClimbing = false;
@@ -185,7 +187,7 @@ void AInkPlayerCharacter::RPC_Server_checkIfPlayerIsInInk_Implementation()
 				if (bIsInInk)
 				{
 					GetCharacterMovement()->MaxWalkSpeed = 1200.f;
-					mPlayerState->mInkMultiplier = 8.0f;
+					mPlayerState->mInkMultiplier = 12.0f;
 					mpShipMesh->SetHiddenInGame(true);
 				}
 				else
@@ -241,7 +243,7 @@ void AInkPlayerCharacter::RPC_Server_SwimClimbLineTrace_Implementation()
 			bIsInInk = levelComponents->CheckInkAtPosition(this, hit);
 			if (bIsInInk)
 			{
-				mPlayerState->mInkMultiplier = 8.0f;
+				mPlayerState->mInkMultiplier = 12.0f;
 				GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
 				GetCharacterMovement()->bOrientRotationToMovement = false;
 				float rot = UKismetMathLibrary::MakeRotFromX(hit.ImpactNormal).Yaw + 180.0f;
@@ -297,6 +299,7 @@ void AInkPlayerCharacter::RPC_Server_UpdatePlayerTeam_Implementation(ETeam aNewT
 {
 	playerTeam = aNewTeam;
 	mCurrentWeapon->mPlayerTeam = aNewTeam;
+	mpTankDynMaterial->SetVectorParameterValue(TEXT("TeamColor"), mCurrentWeapon->mPlayerTeam == ETeam::TEAM1 ? FLinearColor(1.0f, 0.0f, 0.0f, 1.0f) : FLinearColor(0.0f, 0.0f, 1.0f, 1.0f));
 	RPC_UpdatePlayerTeam(aNewTeam);
 }
 
@@ -304,6 +307,13 @@ void AInkPlayerCharacter::RPC_UpdatePlayerTeam_Implementation(ETeam aNewTeam)
 {
 	playerTeam = aNewTeam;
 	mCurrentWeapon->mPlayerTeam = aNewTeam;
+	mpTankDynMaterial->SetVectorParameterValue(TEXT("TeamColor"), mCurrentWeapon->mPlayerTeam == ETeam::TEAM1 ? FLinearColor(1.0f, 0.0f, 0.0f, 1.0f) : FLinearColor(0.0f, 0.0f, 1.0f, 1.0f));
+}
+
+void AInkPlayerCharacter::RPC_SetPlayerMaterials_Implementation()
+{
+	mpTankDynMaterial = UMaterialInstanceDynamic::Create(mpInkMeterMesh->GetMaterial(0), this);
+	mpInkMeterMesh->SetMaterial(0, mpTankDynMaterial);
 }
 
 void AInkPlayerCharacter::BeginPlay()
@@ -317,7 +327,9 @@ void AInkPlayerCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+	RPC_SetPlayerMaterials();
 	GetWorld()->GetTimerManager().SetTimer(mGetPlayerStateHandle, this, &AInkPlayerCharacter::GetPlayerState, 0.1, false);
+	GetWorld()->GetTimerManager().SetTimer(mUpdateInkTankTimerHandle, this, &AInkPlayerCharacter::RPC_Server_UpdatePlayerInkMeter, 0.1, true);
 }
 
 float AInkPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
@@ -349,6 +361,7 @@ void AInkPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(AInkPlayerCharacter, bIsClimbing);
 	DOREPLIFETIME(AInkPlayerCharacter, bIsInInk);
 	DOREPLIFETIME(AInkPlayerCharacter, mNewRot);
+	DOREPLIFETIME(AInkPlayerCharacter, mPlayerState);
 }
 
 
@@ -385,6 +398,22 @@ void AInkPlayerCharacter::GetPlayerState()
 void AInkPlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void AInkPlayerCharacter::RPC_Server_UpdatePlayerInkMeter_Implementation()
+{
+	if (mPlayerState)
+	{
+		RPC_UpdatePlayerInkMeter((mPlayerState->mPlayerInk / mPlayerState->mMaxInk) * 2);
+	}
+}
+
+void AInkPlayerCharacter::RPC_UpdatePlayerInkMeter_Implementation(float aCurrentFill)
+{
+	if (mPlayerState)
+	{
+		mpTankDynMaterial->SetScalarParameterValue(TEXT("Fill"), aCurrentFill);
+	}
 }
 
 void AInkPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

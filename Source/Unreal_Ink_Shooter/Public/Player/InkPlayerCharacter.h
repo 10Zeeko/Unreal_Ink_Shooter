@@ -51,8 +51,13 @@ public:
 	
 	UPROPERTY(Replicated) 
 	USkeletalMeshComponent* mpPlayerMesh;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
 	UStaticMeshComponent* mpInkMeterMesh;
+	UPROPERTY()
+	UMaterialInstanceDynamic* mpTankDynMaterial;
+	UPROPERTY()
+	FTimerHandle mUpdateInkTankTimerHandle;
 
 	// Swim
 	FTimerHandle mIsInInkTimerHandle;
@@ -85,7 +90,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated)
 	bool bIsShooting;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	AInkPlayerState* mPlayerState;
 	FTimerHandle mGetPlayerStateHandle;
 
@@ -142,6 +147,15 @@ protected:
 	void RPC_Server_UpdatePlayerTeam(ETeam aNewTeam);
 	UFUNCTION(NetMulticast, Reliable)
 	void RPC_UpdatePlayerTeam(ETeam aNewTeam);
+
+	// Update player ink meter
+	UFUNCTION(Server, Reliable)
+	void RPC_Server_UpdatePlayerInkMeter();
+	UFUNCTION(NetMulticast, Reliable)
+	void RPC_UpdatePlayerInkMeter(float aCurrentFill);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void RPC_SetPlayerMaterials();
 
 	virtual void BeginPlay() override;
 
