@@ -410,7 +410,7 @@ void AInkPlayerCharacter::RPC_Server_UpdatePlayerInkMeter_Implementation()
 
 void AInkPlayerCharacter::RPC_UpdatePlayerInkMeter_Implementation(float aCurrentFill)
 {
-	if (mPlayerState)
+	if (mpTankDynMaterial != nullptr)
 	{
 		mpTankDynMaterial->SetScalarParameterValue(TEXT("Fill"), aCurrentFill);
 	}

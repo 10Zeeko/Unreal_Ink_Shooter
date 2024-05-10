@@ -1,14 +1,26 @@
 #include "InkGameState.h"
 
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 AInkGameState::AInkGameState()
 {
 }
 
+void AInkGameState::RPC_Server_AddPlayerReady_Implementation()
+{
+	mPlayersReady++;
+}
+
+void AInkGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AInkGameState, mPlayersReady);
+}
+
 void AInkGameState::StartGame()
 {
-	if (UGameplayStatics::GetNumPlayerStates(GetWorld()) > 1)
+	if (mPlayersReady > 1)
 	{
 		
 	}
