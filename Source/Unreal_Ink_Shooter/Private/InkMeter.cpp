@@ -30,6 +30,23 @@ void AInkMeter::RPC_CheckInkFromLevelComponents_Implementation(float aRedTeamInk
 	evOnUpdateInkMeter.Broadcast(aRedTeamInk, aBlueTeamInk);
 }
 
+void AInkMeter::RPC_Server_CheckFinalInkFromLevelComponents_Implementation()
+{
+	TArray<FColor> TeamsColors = { FColor(255,0,0,0), FColor(0,0,255,0) };
+	int RedTeamInk = 0;
+	int BlueTeamInk = 0;
+
+	for (ALevelComponents* apLevelComponent : mpLevelComponents)
+	{
+		if (ALevelComponents* levelC = Cast<ALevelComponents>(apLevelComponent))
+		{
+			levelC->RPC_Server_CheckInk(TeamsColors);
+			RedTeamInk += levelC->mInkValues[0];
+			BlueTeamInk += levelC->mInkValues[1];
+		}
+	}
+}
+
 void AInkMeter::BeginPlay()
 {
 	Super::BeginPlay();

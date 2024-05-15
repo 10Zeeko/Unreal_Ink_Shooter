@@ -20,6 +20,8 @@ public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FOnUpdatePlayersReady evOnUpdatePlayersReady;
 
+	FTimerHandle mGameTimerHandle;
+
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void RPC_Server_AddPlayerReady();
 

@@ -128,6 +128,17 @@ void ALevelComponents::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(ALevelComponents, mInkValues);
 }
 
+void ALevelComponents::RPC_Server_FinalCheckInk_Implementation(const TArray<FColor>& aColorsToCount)
+{
+	if (!mpInkedSurfaceTexture) return;
+	mInkValues.Empty();
+	int SampleSize = FMath::CeilToInt(mpInkedSurfaceTexture->SizeX * mpInkedSurfaceTexture->SizeY * 1.0f);
+	FReadSurfaceDataFlags ReadPixelFlags(RCM_UNorm);
+	TArray<FColor> OutBMP;
+	mpInkedSurfaceTexture->GameThread_GetRenderTargetResource()->ReadPixels(OutBMP, ReadPixelFlags);
+	RPC_Server_CountColors(aColorsToCount, SampleSize, OutBMP);
+}
+
 bool ALevelComponents::IsColorMatch(AInkPlayerCharacter* aInkPlayer, FLinearColor color)
 {
 	switch (aInkPlayer->playerTeam)

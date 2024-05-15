@@ -32,6 +32,9 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void RPC_CheckInkFromLevelComponents(float aRedTeamInk, float aBlueTeamInk);
 
+	UFUNCTION(Server, Unreliable)
+	void RPC_Server_CheckFinalInkFromLevelComponents();
+
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FOnUpdateInkMeter evOnUpdateInkMeter;
 

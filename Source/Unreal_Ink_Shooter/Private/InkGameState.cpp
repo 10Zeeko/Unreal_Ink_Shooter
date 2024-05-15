@@ -9,7 +9,7 @@ AInkGameState::AInkGameState()
 
 void AInkGameState::RPC_Server_AddPlayerReady_Implementation()
 {
-	mPlayersReady++;
+	++mPlayersReady;
 }
 
 void AInkGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -22,7 +22,7 @@ void AInkGameState::StartGame()
 {
 	if (mPlayersReady > 1)
 	{
-		
+		GetWorld()->GetTimerManager().SetTimer(mGameTimerHandle, this, &AInkGameState::EndGame, 180.0f, false);
 	}
 }
 

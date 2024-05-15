@@ -43,6 +43,9 @@ public:
 	void RPC_Server_SamplePixels(const TArray<FColor>& aColorsToCount);
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void RPC_Server_CheckInk(const TArray<FColor>& aColorsToCount);
+
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void RPC_Server_FinalCheckInk(const TArray<FColor>& aColorsToCount);
 	
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	virtual void RPC_Server_PaintAtPosition(AInkBullets* aInkBullet, FHitResult aHitResult);
