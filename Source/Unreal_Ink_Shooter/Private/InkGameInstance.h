@@ -9,6 +9,32 @@
 #include "Interfaces/OnlineSessionInterface.h"
 #include "InkGameInstance.generated.h"
 
+USTRUCT(BlueprintType)
+struct FServerData
+{
+	GENERATED_BODY()
+	FServerData(){}
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly) FString Name;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly) int Ping;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly) int MaxPlayers;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly) int CurrentPlayers;
+};
+
+USTRUCT(BlueprintType)
+struct FPackedServerData
+{
+	GENERATED_BODY()
+	FPackedServerData(){}
+
+	void Add(FServerData aOther) {ServerList.Add(aOther); }
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly) TArray<FServerData> ServerList {};
+	
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFindSessions, FPackedServerData, apSessions);
+
 /**
  * 
  */
@@ -37,5 +63,11 @@ protected:
 	IOnlineSessionPtr mSessionInterface;
 	
 	FString mGameMap {"/Game/Levels/TestLevel?listen"};
-	
+
+private:
+	UPROPERTY(BlueprintAssignable)
+	FOnFindSessions evOnFindSessions;
+
+	UPROPERTY()
+	FString mCurrentSessionsName;
 };
