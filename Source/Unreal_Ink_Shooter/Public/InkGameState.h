@@ -22,8 +22,15 @@ public:
 
 	FTimerHandle mGameTimerHandle;
 
+	FTimerHandle mCheckPlayersReadyTimerHandle;
+
+	void BeginPlay() override;
+
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void RPC_Server_AddPlayerReady();
+
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void RPC_Server_CheckPlayersReady();
 
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
 	

@@ -103,6 +103,12 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	// Prepare player for game
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void RPC_Server_PreparePlayerForGame(TSubclassOf<AWeapon> aNewWeapon);
+	UFUNCTION(Server, Reliable)
+	void RPC_Server_UpdatePlayerTeam(ETeam aNewTeam);
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -143,8 +149,6 @@ protected:
 	void RPC_SwimClimbLineTrace(bool isInInk);
 
 	// Update player team
-	UFUNCTION(Server, Reliable)
-	void RPC_Server_UpdatePlayerTeam(ETeam aNewTeam);
 	UFUNCTION(NetMulticast, Reliable)
 	void RPC_UpdatePlayerTeam(ETeam aNewTeam);
 

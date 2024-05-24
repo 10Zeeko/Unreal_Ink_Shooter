@@ -87,8 +87,11 @@ void AInkPlayerCharacter::RPC_Shoot_Implementation(const FInputActionValue& Valu
 {
 	if(IsLocallyControlled())
 	{
-		mCurrentWeapon->RPC_Server_Shoot(FollowCamera, GetCharacterMovement());
-		bIsShooting = true;
+		if (mCurrentWeapon != nullptr)
+		{
+			mCurrentWeapon->RPC_Server_Shoot(FollowCamera, GetCharacterMovement());
+			bIsShooting = true;
+		}
 	}
 }
 
@@ -116,7 +119,6 @@ void AInkPlayerCharacter::RPC_Server_EnableSwimming_Implementation()
 	mpShipMesh->SetHiddenInGame(false);
 	mpInkMeterMesh->SetHiddenInGame(true);
 	mCurrentWeapon->RPC_Server_PlayerSwimming();
-	RPC_Server_UpdatePlayerTeam(ETeam::TEAM2);
 }
 
 void AInkPlayerCharacter::RPC_EnableSwimming_Implementation()
@@ -298,22 +300,34 @@ void AInkPlayerCharacter::RPC_SwimClimbLineTrace_Implementation(bool isInInk)
 void AInkPlayerCharacter::RPC_Server_UpdatePlayerTeam_Implementation(ETeam aNewTeam)
 {
 	playerTeam = aNewTeam;
-	mCurrentWeapon->mPlayerTeam = aNewTeam;
-	mpTankDynMaterial->SetVectorParameterValue(TEXT("TeamColor"), mCurrentWeapon->mPlayerTeam == ETeam::TEAM1 ? FLinearColor(1.0f, 0.0f, 0.0f, 1.0f) : FLinearColor(0.0f, 0.0f, 1.0f, 1.0f));
+	if (mCurrentWeapon != nullptr)
+	{
+		mCurrentWeapon->mPlayerTeam = aNewTeam;
+		mpTankDynMaterial->SetVectorParameterValue(TEXT("TeamColor"), mCurrentWeapon->mPlayerTeam == ETeam::TEAM1 ? FLinearColor(1.0f, 0.0f, 0.0f, 1.0f) : FLinearColor(0.0f, 0.0f, 1.0f, 1.0f));
+	}
 	RPC_UpdatePlayerTeam(aNewTeam);
 }
 
 void AInkPlayerCharacter::RPC_UpdatePlayerTeam_Implementation(ETeam aNewTeam)
 {
 	playerTeam = aNewTeam;
-	mCurrentWeapon->mPlayerTeam = aNewTeam;
-	mpTankDynMaterial->SetVectorParameterValue(TEXT("TeamColor"), mCurrentWeapon->mPlayerTeam == ETeam::TEAM1 ? FLinearColor(1.0f, 0.0f, 0.0f, 1.0f) : FLinearColor(0.0f, 0.0f, 1.0f, 1.0f));
+	if (mCurrentWeapon != nullptr)
+	{
+		mCurrentWeapon->mPlayerTeam = aNewTeam;
+		mpTankDynMaterial->SetVectorParameterValue(TEXT("TeamColor"), mCurrentWeapon->mPlayerTeam == ETeam::TEAM1 ? FLinearColor(1.0f, 0.0f, 0.0f, 1.0f) : FLinearColor(0.0f, 0.0f, 1.0f, 1.0f));
+	}
 }
 
 void AInkPlayerCharacter::RPC_SetPlayerMaterials_Implementation()
 {
 	mpTankDynMaterial = UMaterialInstanceDynamic::Create(mpInkMeterMesh->GetMaterial(0), this);
 	mpInkMeterMesh->SetMaterial(0, mpTankDynMaterial);
+}
+
+void AInkPlayerCharacter::RPC_Server_PreparePlayerForGame_Implementation(TSubclassOf<AWeapon> aNewWeapon)
+{
+	selectedWeapon = aNewWeapon;
+	RPC_Server_SetupPlayerWeapon();
 }
 
 void AInkPlayerCharacter::BeginPlay()
@@ -368,19 +382,25 @@ void AInkPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 void AInkPlayerCharacter::RPC_Server_SetupPlayerWeapon_Implementation()
 {
 	if (!HasAuthority()) return;
-	if (mCurrentWeapon) return;
-	FActorSpawnParameters spawnParams;
-	spawnParams.Owner = this;
-	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	mCurrentWeapon = GetWorld()->SpawnActor<AWeapon>(selectedWeapon, GetActorLocation(), FRotator(0.0f, 0.0f, 0.0f), spawnParams);
-	
-	if(!IsRunningDedicatedServer())
+	if (IsValid(selectedWeapon))
 	{
-		FAttachmentTransformRules attachmentRules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepRelative, EAttachmentRule::KeepWorld, true);
-		mCurrentWeapon->AttachToComponent(GetMesh(), attachmentRules, "WeaponSocket");
-		mCurrentWeapon->mPlayerTeam = playerTeam;
-
-		mPlayerState->mWeaponConsumption = mCurrentWeapon->mInkConsumption;
+		if (mCurrentWeapon != nullptr)
+		{
+			mCurrentWeapon->Destroy();
+			mCurrentWeapon = nullptr;
+		}
+		FActorSpawnParameters spawnParams;
+		spawnParams.Owner = this;
+		spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		mCurrentWeapon = GetWorld()->SpawnActor<AWeapon>(selectedWeapon, GetActorLocation(), FRotator(0.0f, 0.0f, 0.0f), spawnParams);
+	
+		if(!IsRunningDedicatedServer())
+		{
+			FAttachmentTransformRules attachmentRules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepRelative, EAttachmentRule::KeepWorld, true);
+			mCurrentWeapon->AttachToComponent(GetMesh(), attachmentRules, "WeaponSocket");
+			mPlayerState->mWeaponConsumption = mCurrentWeapon->mInkConsumption;
+			mCurrentWeapon->mPlayerTeam = playerTeam;
+		}
 	}
 }
 
@@ -388,11 +408,6 @@ void AInkPlayerCharacter::GetPlayerState()
 {
 	if(auto* inkController {GetController()})
 		mPlayerState = Cast<AInkPlayerState>(inkController->PlayerState);
-
-	if (IsValid(selectedWeapon))
-	{
-		RPC_Server_SetupPlayerWeapon();
-	}
 }
 
 void AInkPlayerCharacter::Tick(float DeltaTime)

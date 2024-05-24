@@ -121,7 +121,7 @@ void UInkGameInstance::CreateServer(FString aServer)
 	FOnlineSessionSetting CompoundSessionName;
 	CompoundSessionName.AdvertisementType = EOnlineDataAdvertisementType::ViaOnlineServiceAndPing;
 	CompoundSessionName.Data = aServer;
-	Settings.Settings.Add(FName("SERVER_NAME"), CompoundSessionName);
+	Settings.Settings.Add(FName("SESSION_NAME"), CompoundSessionName);
 
 	mSessionInterface->CreateSession(0, FName(aServer), Settings);
 }
@@ -146,7 +146,7 @@ void UInkGameInstance::JoinServer(int aServerIndex)
 		auto ServerName {ResultServer.Session.SessionSettings.Settings.FindRef("SESSION_NAME").Data.ToString()};
 		mCurrentSessionsName = ServerName;
 		
-		LogD2("[Server] - Joining server %s", aServerIndex);
+		LogD2("[Server] - Joining server %d", aServerIndex);
 		mSessionInterface->JoinSession(0, FName(ServerName), ResultServer);
 	}
 	else
