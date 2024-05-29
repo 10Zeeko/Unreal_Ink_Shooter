@@ -1,22 +1,9 @@
 #define ScreenD(x) if (GEngine){GEngine->AddOnScrenDebugMessage(-1, 2.0f, FColor::Yellow, TEXT(x));}
-#define ScreenDv(x) if (GEngine){GEngine->AddOnScrenDebugMessage(-1, 2.0f, FColor::Yellow, x);}
-
-#define ScreenDt(x, y) if (GEngine){GEngine->AddOnScrenDebugMessage(-1, y.0f, FColor::Yellow, TEXT(x));}
-#define ScreenDv(x, y) if (GEngine){GEngine->AddOnScrenDebugMessage(-1, y.0f, FColor::Yellow, x);}
-
-#define LogD(x) UE_LOG(LogTemp, Warning, TEXT(x));
-#define LogD2(x, y) UE_LOG(LogTemp, Warning, TEXT(x), y);
-#define LogDt(x) UE_LOG(LogTemp, Warning, x);
-
-#define Format1(x, y) FString::Printf(TEXT(x), y);
-#define Format1(x, y, z) FString::Printf(TEXT(x), y, z);
-#define Format1(x, y, z, a) FString::Printf(TEXT(x), y, z, a);
-#define Format1(x, y, z, a, b) FString::Printf(TEXT(x), y, z, a, b);
-#define Format1(x, y, z, a, b, c) FString::Printf(TEXT(x), y, z, a, b, c);
 
 #include "InkGameInstance.h"
 
 #include "Kismet/GameplayStatics.h"
+#include "Unreal_Ink_Shooter/Public/Utils.h"
 
 UInkGameInstance::UInkGameInstance()
 {

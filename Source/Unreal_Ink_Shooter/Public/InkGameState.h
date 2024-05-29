@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
+#include "Player/InkPlayerCharacter.h"
 #include "InkGameState.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdatePlayersReady, int, Team1);
@@ -17,6 +18,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
 	int mPlayersReady {0};
+	UPROPERTY()
+	TArray<AInkPlayerCharacter*> mTeam1Players;
+	UPROPERTY()
+	TArray<AInkPlayerCharacter*> mTeam2Players;
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FOnUpdatePlayersReady evOnUpdatePlayersReady;
 
@@ -27,7 +32,9 @@ public:
 	void BeginPlay() override;
 
 	UFUNCTION(Server, Reliable, BlueprintCallable)
-	void RPC_Server_AddPlayerReady();
+	void RPC_Server_AddPlayerReady(AInkPlayerCharacter* aPlayer, bool team1);
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void RPC_Server_RemovePlayerReady(AInkPlayerCharacter* aPlayer, bool team1);
 
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void RPC_Server_CheckPlayersReady();

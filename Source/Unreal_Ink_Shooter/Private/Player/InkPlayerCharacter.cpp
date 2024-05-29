@@ -87,7 +87,7 @@ void AInkPlayerCharacter::RPC_Shoot_Implementation(const FInputActionValue& Valu
 {
 	if(IsLocallyControlled())
 	{
-		if (mCurrentWeapon != nullptr)
+		if (mCurrentWeapon)
 		{
 			mCurrentWeapon->RPC_Server_Shoot(FollowCamera, GetCharacterMovement());
 			bIsShooting = true;
@@ -118,13 +118,13 @@ void AInkPlayerCharacter::RPC_Server_EnableSwimming_Implementation()
 	mpPlayerMesh->SetHiddenInGame(true);
 	mpShipMesh->SetHiddenInGame(false);
 	mpInkMeterMesh->SetHiddenInGame(true);
-	mCurrentWeapon->RPC_Server_PlayerSwimming();
+	mCurrentWeapon ? mCurrentWeapon->RPC_Server_PlayerSwimming() : void();
 }
 
 void AInkPlayerCharacter::RPC_EnableSwimming_Implementation()
 {
 	mpPlayerMesh->SetHiddenInGame(true);
-	mCurrentWeapon->RPC_Server_PlayerSwimming();
+	mCurrentWeapon ? mCurrentWeapon->RPC_Server_PlayerSwimming() : void();
 	mpInkMeterMesh->SetHiddenInGame(true);
 	mpShipMesh->SetHiddenInGame(false);
 }
@@ -146,7 +146,7 @@ void AInkPlayerCharacter::RPC_Server_DisableSwimming_Implementation()
 void AInkPlayerCharacter::RPC_DisableSwimming_Implementation()
 {
 	mpPlayerMesh->SetHiddenInGame(false);
-	mCurrentWeapon->RPC_Server_PlayerShooting();
+	mCurrentWeapon ? mCurrentWeapon->RPC_Server_PlayerShooting() : void();
 	playerState = EPlayer::IDLE;
 	mpShipMesh->SetHiddenInGame(true);
 	mpInkMeterMesh->SetHiddenInGame(false);
@@ -300,7 +300,7 @@ void AInkPlayerCharacter::RPC_SwimClimbLineTrace_Implementation(bool isInInk)
 void AInkPlayerCharacter::RPC_Server_UpdatePlayerTeam_Implementation(ETeam aNewTeam)
 {
 	playerTeam = aNewTeam;
-	if (mCurrentWeapon != nullptr)
+	if (mCurrentWeapon)
 	{
 		mCurrentWeapon->mPlayerTeam = aNewTeam;
 		mpTankDynMaterial->SetVectorParameterValue(TEXT("TeamColor"), mCurrentWeapon->mPlayerTeam == ETeam::TEAM1 ? FLinearColor(1.0f, 0.0f, 0.0f, 1.0f) : FLinearColor(0.0f, 0.0f, 1.0f, 1.0f));
@@ -311,7 +311,7 @@ void AInkPlayerCharacter::RPC_Server_UpdatePlayerTeam_Implementation(ETeam aNewT
 void AInkPlayerCharacter::RPC_UpdatePlayerTeam_Implementation(ETeam aNewTeam)
 {
 	playerTeam = aNewTeam;
-	if (mCurrentWeapon != nullptr)
+	if (mCurrentWeapon)
 	{
 		mCurrentWeapon->mPlayerTeam = aNewTeam;
 		mpTankDynMaterial->SetVectorParameterValue(TEXT("TeamColor"), mCurrentWeapon->mPlayerTeam == ETeam::TEAM1 ? FLinearColor(1.0f, 0.0f, 0.0f, 1.0f) : FLinearColor(0.0f, 0.0f, 1.0f, 1.0f));
@@ -384,7 +384,7 @@ void AInkPlayerCharacter::RPC_Server_SetupPlayerWeapon_Implementation()
 	if (!HasAuthority()) return;
 	if (IsValid(selectedWeapon))
 	{
-		if (mCurrentWeapon != nullptr)
+		if (mCurrentWeapon)
 		{
 			mCurrentWeapon->Destroy();
 			mCurrentWeapon = nullptr;

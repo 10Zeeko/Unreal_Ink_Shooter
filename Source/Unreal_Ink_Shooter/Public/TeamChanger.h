@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -24,8 +22,10 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	ETeam selectedTeam {ETeam::NONE};
 
-	UFUNCTION()
-	virtual void OnOverlapBegin(class UPrimitiveComponent* newComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void Server_OnOverlapBegin(class AActor* OtherActor);
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void Server_OnOverlapEnd(AActor* OtherActor);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
