@@ -70,18 +70,23 @@ void AWeapon::RPC_Server_PrepareForShooting_Implementation(UCameraComponent* aFo
 	FTransform ActorWorldTransform = GetActorTransform();
 	FVector WorldSpawnLocation = ActorWorldTransform.TransformPosition(mBulletSpawnPoint);
 	
-	mInkBullet = GetWorld()->SpawnActor<AInkBullets>(mBulletBP, WorldSpawnLocation, NewRotation);
+	// mInkBullet = GetWorld()->SpawnActor<AInkBullets>(mBulletBP, WorldSpawnLocation, NewRotation);
+	auto BulletTransform {FTransform(NewRotation, WorldSpawnLocation)};
+	mInkBullet = GetWorld()->SpawnActorDeferred<AInkBullets>(mBulletBP, BulletTransform);
 
 	if (mInkBullet != nullptr)
 	{
 		mInkBullet->mpOwnerTeam = mPlayerTeam;
-		mInkBullet->UpdateColor();
 		aPlayerCharacterMovement->RotationRate = FRotator(0.0f, 1800.0f, 00.0f);
 		aPlayerCharacterMovement->bOrientRotationToMovement = false;
 		aPlayerCharacterMovement->bUseControllerDesiredRotation = true;
 		bIsShooting = true;
 		bCanShoot = false;
+
+		mInkBullet->FinishSpawning(BulletTransform);
+		mInkBullet->UpdateColor();
 	}
+	
 	RPC_PrepareForShooting(aFollowCamera, aPlayerCharacterMovement);
 }
 

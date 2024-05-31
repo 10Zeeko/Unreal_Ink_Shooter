@@ -8,6 +8,7 @@
 #include "InkGameState.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdatePlayersReady, int, Team1);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndGame);
 
 UCLASS()
 class UNREAL_INK_SHOOTER_API AInkGameState : public AGameStateBase
@@ -22,12 +23,24 @@ public:
 	TArray<AInkPlayerCharacter*> mTeam1Players;
 	UPROPERTY()
 	TArray<AInkPlayerCharacter*> mTeam2Players;
+	
+	UPROPERTY()
+	TArray<FVector> mTeam1SpawnPoints;
+	
+	UPROPERTY()
+	TArray<FVector> mTeam2SpawnPoints;
+	
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FOnUpdatePlayersReady evOnUpdatePlayersReady;
-
+	
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FOnEndGame evOnEndGame;
+	
 	FTimerHandle mGameTimerHandle;
 
 	FTimerHandle mCheckPlayersReadyTimerHandle;
+
+	FTimerHandle mEndServerTimerHandle;
 
 	void BeginPlay() override;
 

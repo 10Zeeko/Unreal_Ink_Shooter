@@ -92,22 +92,27 @@ void AInkBullets::PaintAtPosition(TArray<FHitResult>& bulletHit)
 	}
 }
 
-void AInkBullets::OnOverlapBegin_Implementation(UPrimitiveComponent* newComp, AActor* OtherActor,
+void AInkBullets::OnOverlapBegin(UPrimitiveComponent* newComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (newComp == mpCollisionSphere)
 	{
-		if (ALevelComponents* levelComponents = Cast<ALevelComponents>(OtherActor))
-		{
-			DetectHitInSurface(OtherActor->GetTransform());
-		}
-		else if (AInkPlayerCharacter* inkPlayerCharacter = Cast<AInkPlayerCharacter>(OtherActor))
-		{
-			ScreenD(*OtherActor->GetName());
-			if (inkPlayerCharacter->playerTeam == mpOwnerTeam) return;
+		ServerOnOverlapBegin(newComp, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+	}
+}
+
+void AInkBullets::ServerOnOverlapBegin_Implementation(UPrimitiveComponent* newComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (ALevelComponents* levelComponents = Cast<ALevelComponents>(OtherActor))
+	{
+		DetectHitInSurface(OtherActor->GetTransform());
+	}
+	else if (AInkPlayerCharacter* inkPlayerCharacter = Cast<AInkPlayerCharacter>(OtherActor))
+	{
+		if (inkPlayerCharacter->playerTeam == mpOwnerTeam) return;
 		
-			UGameplayStatics::ApplyDamage(inkPlayerCharacter, mDamage, nullptr, this, UDamageType::StaticClass());
-		}
+		UGameplayStatics::ApplyDamage(inkPlayerCharacter, mDamage, nullptr, this, UDamageType::StaticClass());
 	}
 }
 

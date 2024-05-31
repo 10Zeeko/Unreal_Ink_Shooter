@@ -1,5 +1,3 @@
-#define ScreenD(x) if (GEngine){GEngine->AddOnScrenDebugMessage(-1, 2.0f, FColor::Yellow, TEXT(x));}
-
 #include "InkGameInstance.h"
 
 #include "Kismet/GameplayStatics.h"

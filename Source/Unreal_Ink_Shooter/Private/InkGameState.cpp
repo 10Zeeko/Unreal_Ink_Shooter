@@ -1,5 +1,7 @@
 #include "InkGameState.h"
 
+#include "InkMeter.h"
+#include "ToolBuilderUtil.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Unreal_Ink_Shooter/Public/Utils.h"
@@ -12,6 +14,15 @@ void AInkGameState::BeginPlay()
 {
 	Super::BeginPlay();
 	mPlayersReady = 0;
+	mTeam1SpawnPoints.Add(FVector(0.0,-3000.0,540.0));
+	mTeam1SpawnPoints.Add(FVector(0.0,-3300.0,540.0));
+	mTeam1SpawnPoints.Add(FVector(150.0,-3150.0,540.0));
+	mTeam1SpawnPoints.Add(FVector(-150.0,-3150.0,540.0));
+
+	mTeam2SpawnPoints.Add(FVector(0.0,3000.0,540.0));
+	mTeam2SpawnPoints.Add(FVector(0.0,3300.0,540.0));
+	mTeam2SpawnPoints.Add(FVector(150.0,3150.0,540.0));
+	mTeam2SpawnPoints.Add(FVector(-150.0,3150.0,540.0));
 
 	GetWorld()->GetTimerManager().SetTimer(mCheckPlayersReadyTimerHandle, this, &AInkGameState::RPC_Server_CheckPlayersReady_Implementation, 5.0f, true);
 }
@@ -27,7 +38,6 @@ void AInkGameState::RPC_Server_AddPlayerReady_Implementation(AInkPlayerCharacter
 	{
 		mTeam2Players.Add(aPlayer);
 	}
-	ScreenD(Format1("RPC_Server_AddPlayerReady_Implementation: %d", mPlayersReady));
 }
 
 void AInkGameState::RPC_Server_RemovePlayerReady_Implementation(AInkPlayerCharacter* aPlayer, bool team1)
@@ -41,7 +51,6 @@ void AInkGameState::RPC_Server_RemovePlayerReady_Implementation(AInkPlayerCharac
 	{
 		mTeam2Players.Remove(aPlayer);
 	}
-	ScreenD(Format1("RPC_Server_RemovePlayerReady_Implementation: %d", mPlayersReady));
 }
 
 void AInkGameState::RPC_Server_CheckPlayersReady_Implementation()
@@ -59,9 +68,40 @@ void AInkGameState::StartGame()
 {
  	GetWorld()->GetTimerManager().ClearTimer(mCheckPlayersReadyTimerHandle);
 	mPlayersReady = 0;
-	GetWorld()->GetTimerManager().SetTimer(mGameTimerHandle, this, &AInkGameState::EndGame, 180.0f, false);
+	
+	// Move players to spawn points
+	for (int i = 0; i < mTeam1Players.Num(); ++i)
+	{
+		auto* Player {mTeam1Players[i]};
+		Player->SetActorLocation(mTeam1SpawnPoints[i]);
+		Player->mSpawnPoint = mTeam1SpawnPoints[i];
+	}
+	for (int i = 0; i < mTeam2Players.Num(); ++i)
+	{
+		auto* Player {mTeam2Players[i]};
+		Player->SetActorLocation(mTeam2SpawnPoints[i]);
+		Player->mSpawnPoint = mTeam2SpawnPoints[i];
+	}
+	GetWorld()->GetTimerManager().SetTimer(mGameTimerHandle, this, &AInkGameState::EndGame, 90.0f, true);
+
+	ScreenD("Game started");
 }
 
 void AInkGameState::EndGame()
 {
+	ScreenD("Game ended");
+	GetWorld()->GetTimerManager().ClearTimer(mGameTimerHandle);
+	TArray<AInkPlayerState*> PlayerStatesArray;
+	for (APlayerState* PlayerState : GetWorld()->GetGameState()->PlayerArray)
+	{
+		if (AInkPlayerState* InkPlayerState = Cast<AInkPlayerState>(PlayerState))
+		{
+			PlayerStatesArray.Add(InkPlayerState);
+		}
+	}
+
+	AInkMeter *InkMeter = Cast<AInkMeter>(UGameplayStatics::GetActorOfClass(GetWorld(), AInkMeter::StaticClass()));
+	InkMeter->RPC_Server_CheckFinalInkFromLevelComponents();
+
+	evOnEndGame.Broadcast();
 }

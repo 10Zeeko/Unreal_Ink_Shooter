@@ -24,7 +24,18 @@ void ATeamChanger::Server_OnOverlapBegin_Implementation(AActor* OtherActor)
 	{
 		mPlayerCharacter->RPC_Server_UpdatePlayerTeam(selectedTeam);
 		AInkGameState* inkGameState = Cast<AInkGameState>(GetWorld()->GetGameState());
-		inkGameState->RPC_Server_AddPlayerReady(mPlayerCharacter, selectedTeam ? true : false);
+		switch (selectedTeam)
+		{
+		case 0:
+			inkGameState->RPC_Server_AddPlayerReady(mPlayerCharacter, true);
+			break;
+		case 1:
+			inkGameState->RPC_Server_AddPlayerReady(mPlayerCharacter, false);
+			break;
+		default:
+			inkGameState->RPC_Server_AddPlayerReady(mPlayerCharacter, true);
+			break;
+		}
 	}
 }
 
@@ -34,7 +45,18 @@ void ATeamChanger::Server_OnOverlapEnd_Implementation(AActor* OtherActor)
 	if ( mPlayerCharacter && mPlayerCharacter->selectedWeapon != nullptr)
 	{
 		AInkGameState* inkGameState = Cast<AInkGameState>(GetWorld()->GetGameState());
-		inkGameState->RPC_Server_RemovePlayerReady(mPlayerCharacter, selectedTeam ? true : false);
+		switch (selectedTeam)
+		{
+		case 0:
+			inkGameState->RPC_Server_RemovePlayerReady(mPlayerCharacter, true);
+			break;
+		case 1:
+			inkGameState->RPC_Server_RemovePlayerReady(mPlayerCharacter, false);
+			break;
+		default:
+			inkGameState->RPC_Server_RemovePlayerReady(mPlayerCharacter, true);
+			break;
+		}
 	}
 }
 

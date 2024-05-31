@@ -4,6 +4,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "InkGameState.h"
 #include "LevelComponents.h"
 #include "Components/ArrowComponent.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -44,6 +45,27 @@ AInkPlayerCharacter::AInkPlayerCharacter()
 	mpClimbArrow->SetupAttachment(mpPlayerMesh);
 
 	bIsShooting = false;
+}
+
+void AInkPlayerCharacter::RPC_Server_PlayerDies_Implementation()
+{
+	mPlayerState->mPlayerInk = mPlayerState->mMaxInk;
+	mPlayerState->mHP = mPlayerState->mMaxHp;
+	SetActorLocation(mSpawnPoint);
+}
+
+void AInkPlayerCharacter::RPCEndGame_Implementation()
+{
+	if(!IsValid(Controller)) return;
+	Controller->ChangeState(EName::Spectating);
+}
+
+void AInkPlayerCharacter::EndGame()
+{
+	if(!IsValid(Controller)) return;
+	Controller->ChangeState(EName::Spectating);
+
+	RPCEndGame();
 }
 
 void AInkPlayerCharacter::Move(const FInputActionValue& Value)
@@ -311,7 +333,7 @@ void AInkPlayerCharacter::RPC_Server_UpdatePlayerTeam_Implementation(ETeam aNewT
 void AInkPlayerCharacter::RPC_UpdatePlayerTeam_Implementation(ETeam aNewTeam)
 {
 	playerTeam = aNewTeam;
-	if (mCurrentWeapon)
+	if (mCurrentWeapon && mpTankDynMaterial)
 	{
 		mCurrentWeapon->mPlayerTeam = aNewTeam;
 		mpTankDynMaterial->SetVectorParameterValue(TEXT("TeamColor"), mCurrentWeapon->mPlayerTeam == ETeam::TEAM1 ? FLinearColor(1.0f, 0.0f, 0.0f, 1.0f) : FLinearColor(0.0f, 0.0f, 1.0f, 1.0f));
@@ -341,6 +363,7 @@ void AInkPlayerCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+	mSpawnPoint = GetActorLocation();
 	RPC_SetPlayerMaterials();
 	GetWorld()->GetTimerManager().SetTimer(mGetPlayerStateHandle, this, &AInkPlayerCharacter::GetPlayerState, 0.1, false);
 	GetWorld()->GetTimerManager().SetTimer(mUpdateInkTankTimerHandle, this, &AInkPlayerCharacter::RPC_Server_UpdatePlayerInkMeter, 0.1, true);
@@ -349,13 +372,14 @@ void AInkPlayerCharacter::BeginPlay()
 float AInkPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	AActor* DamageCauser)
 {
-	ScreenD("HP: %f");
-	
 	if (mPlayerState)
 	{
 		mPlayerState->PlayerDamaged(DamageAmount);
-	
-		ScreenD(Format1("HP: %f", mPlayerState->mHP));
+
+		if (mPlayerState->mHP <= 0)
+		{
+			RPC_Server_PlayerDies();
+		}
 	}
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
@@ -404,10 +428,21 @@ void AInkPlayerCharacter::RPC_Server_SetupPlayerWeapon_Implementation()
 	}
 }
 
+void AInkPlayerCharacter::ServerAutism_Implementation()
+{
+	auto* GameState = Cast<AInkGameState>(GetWorld()->GetGameState());
+	if (IsValid(GameState) && HasAuthority())
+	{
+		GameState->evOnEndGame.AddDynamic(this, &AInkPlayerCharacter::EndGame);
+	}
+}
+
 void AInkPlayerCharacter::GetPlayerState()
 {
 	if(auto* inkController {GetController()})
 		mPlayerState = Cast<AInkPlayerState>(inkController->PlayerState);
+
+	ServerAutism();
 }
 
 void AInkPlayerCharacter::Tick(float DeltaTime)

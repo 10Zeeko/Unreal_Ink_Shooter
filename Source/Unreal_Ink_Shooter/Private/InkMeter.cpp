@@ -1,6 +1,7 @@
 #include "InkMeter.h"
 #include "GameFramework/GameModeBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "Unreal_Ink_Shooter/Public/Utils.h"
 
 AInkMeter::AInkMeter()
 {
@@ -44,6 +45,19 @@ void AInkMeter::RPC_Server_CheckFinalInkFromLevelComponents_Implementation()
 			RedTeamInk += levelC->mInkValues[0];
 			BlueTeamInk += levelC->mInkValues[1];
 		}
+	}
+
+	if (RedTeamInk > BlueTeamInk)
+	{
+		ScreenD("Red team won");
+	}
+	else if (BlueTeamInk > RedTeamInk)
+	{
+		ScreenD("Blue team won");
+	}
+	else
+	{
+		ScreenD("Draw");
 	}
 }
 

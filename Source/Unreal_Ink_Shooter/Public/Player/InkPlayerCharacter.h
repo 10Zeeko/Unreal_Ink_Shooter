@@ -59,6 +59,9 @@ public:
 	UPROPERTY()
 	FTimerHandle mUpdateInkTankTimerHandle;
 
+	UPROPERTY()
+	FVector mSpawnPoint;
+
 	// Swim
 	FTimerHandle mIsInInkTimerHandle;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
@@ -94,6 +97,8 @@ public:
 	AInkPlayerState* mPlayerState;
 	FTimerHandle mGetPlayerStateHandle;
 
+	UFUNCTION(Server, Reliable)
+	void ServerAutism();
 	void GetPlayerState();
 
 	virtual void Tick(float DeltaTime) override;
@@ -109,6 +114,14 @@ public:
 	void RPC_Server_PreparePlayerForGame(TSubclassOf<AWeapon> aNewWeapon);
 	UFUNCTION(Server, Reliable)
 	void RPC_Server_UpdatePlayerTeam(ETeam aNewTeam);
+
+	UFUNCTION(Server, Reliable)
+	void RPC_Server_PlayerDies();
+	UFUNCTION()
+	void EndGame();
+	UFUNCTION(Server, Reliable)
+	void RPCEndGame();
+
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);

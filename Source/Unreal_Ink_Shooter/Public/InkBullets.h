@@ -58,9 +58,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void DetectHitInSurface(FTransform aOverlappedActorTransform);
 
-	UFUNCTION(Server, Reliable)
+	UFUNCTION()
 	virtual void OnOverlapBegin(class UPrimitiveComponent* newComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
+	UFUNCTION(Server, Reliable)
+	void ServerOnOverlapBegin(class UPrimitiveComponent* newComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual void Tick(float DeltaSeconds) override;
