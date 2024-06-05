@@ -14,15 +14,15 @@ void AInkGameState::BeginPlay()
 {
 	Super::BeginPlay();
 	mPlayersReady = 0;
-	mTeam1SpawnPoints.Add(FVector(0.0,-3000.0,540.0));
-	mTeam1SpawnPoints.Add(FVector(0.0,-3300.0,540.0));
-	mTeam1SpawnPoints.Add(FVector(150.0,-3150.0,540.0));
-	mTeam1SpawnPoints.Add(FVector(-150.0,-3150.0,540.0));
+	mTeam1SpawnPoints.Add(FVector(-1700.0,-5590.0,540.0));
+	mTeam1SpawnPoints.Add(FVector(-1700.0,-5890.0,540.0));
+	mTeam1SpawnPoints.Add(FVector(-1850.0,-5440.0,540.0));
+	mTeam1SpawnPoints.Add(FVector(-1550.0,-5440.0,540.0));
 
-	mTeam2SpawnPoints.Add(FVector(0.0,3000.0,540.0));
-	mTeam2SpawnPoints.Add(FVector(0.0,3300.0,540.0));
-	mTeam2SpawnPoints.Add(FVector(150.0,3150.0,540.0));
-	mTeam2SpawnPoints.Add(FVector(-150.0,3150.0,540.0));
+	mTeam2SpawnPoints.Add(FVector(1700.0,5590.0,540.0));
+	mTeam2SpawnPoints.Add(FVector(1700.0,5890.0,540.0));
+	mTeam2SpawnPoints.Add(FVector(1850.0,5440.0,540.0));
+	mTeam2SpawnPoints.Add(FVector(1550.0,5440.0,540.0));
 
 	GetWorld()->GetTimerManager().SetTimer(mCheckPlayersReadyTimerHandle, this, &AInkGameState::RPC_Server_CheckPlayersReady_Implementation, 5.0f, true);
 }
@@ -82,7 +82,7 @@ void AInkGameState::StartGame()
 		Player->SetActorLocation(mTeam2SpawnPoints[i]);
 		Player->mSpawnPoint = mTeam2SpawnPoints[i];
 	}
-	GetWorld()->GetTimerManager().SetTimer(mGameTimerHandle, this, &AInkGameState::EndGame, 90.0f, true);
+	GetWorld()->GetTimerManager().SetTimer(mGameTimerHandle, this, &AInkGameState::EndGame, 180.0f, true);
 
 	ScreenD("Game started");
 }

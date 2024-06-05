@@ -14,6 +14,13 @@ public:
 	// Sets default values for this actor's properties
 	ALevelComponents();
 
+	UPROPERTY()
+	bool bHasBeenUpdated = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float mPaintSize = 0.1f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int mTextureSizeMultiplier = 1;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* mpStaticMesh;
 

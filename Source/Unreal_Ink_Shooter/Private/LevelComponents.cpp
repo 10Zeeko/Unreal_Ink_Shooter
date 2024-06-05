@@ -17,6 +17,8 @@ void ALevelComponents::BeginPlay()
 {
 	Super::BeginPlay();
 	SetUpMaterials();
+	mInkValues.Add(0);
+	mInkValues.Add(0);
 }
 
 void ALevelComponents::SetUpMaterials()
@@ -29,9 +31,10 @@ void ALevelComponents::SetUpMaterials()
 
 void ALevelComponents::SetUpInkedSurfaceTexture(UMaterialInstanceDynamic* aInkedSurfaceMaterial)
 {
-	mpInkedSurfaceTexture = UKismetRenderingLibrary::CreateRenderTarget2D(this, 512, 512, RTF_RGBA16f);
+	mpInkedSurfaceTexture = UKismetRenderingLibrary::CreateRenderTarget2D(this, 512 * mTextureSizeMultiplier, 512 * mTextureSizeMultiplier, RTF_RGBA16f);
 	aInkedSurfaceMaterial->SetTextureParameterValue(TEXT("InkedSurface"), mpInkedSurfaceTexture);
-	aInkedSurfaceMaterial->SetTextureParameterValue(TEXT("NormalTexture"), mpInkedSurfaceTexture);
+	UTextureRenderTarget2D* splashTextre = UKismetRenderingLibrary::CreateRenderTarget2D(this, 512, 512, RTF_RGBA16f);
+	aInkedSurfaceMaterial->SetTextureParameterValue(TEXT("NormalTexture"), splashTextre);
 }
 
 void ALevelComponents::SetUpBrushMaterial()
@@ -42,8 +45,12 @@ void ALevelComponents::SetUpBrushMaterial()
 void ALevelComponents::RPC_Server_CheckInk_Implementation(const TArray<FColor>& aColorsToCount)
 {
 	if (!mpInkedSurfaceTexture) return;
-	mInkValues.Empty();
-	RPC_Server_SamplePixels(aColorsToCount);
+	if (bHasBeenUpdated)
+	{
+		bHasBeenUpdated = false;
+		mInkValues.Empty();
+		RPC_Server_SamplePixels(aColorsToCount);
+	}
 }
 
 void ALevelComponents::RPC_Server_SamplePixels_Implementation(const TArray<FColor>& ColorsToCount)
@@ -81,6 +88,7 @@ void ALevelComponents::RPC_Server_InitializeResultArray_Implementation(const TAr
 void ALevelComponents::RPC_Server_PaintAtPosition_Implementation(AInkBullets* aInkBullet, FHitResult aHitResult)
 {
 	if(!IsValid(mpBrushDynMaterial)) return;
+	bHasBeenUpdated = true;
 	
 	FVector2D UV(0.f, 0.f);
 	UGameplayStatics::FindCollisionUV(aHitResult, 0, UV);
@@ -98,7 +106,7 @@ void ALevelComponents::RPC_PaintAtPosition_Implementation(AInkBullets* aInkBulle
 	
 	// Set Brush Parameters
 	mpBrushDynMaterial->SetVectorParameterValue(TEXT("BrushPosition"), aColor);
-	mpBrushDynMaterial->SetScalarParameterValue(TEXT("BrushSize"), aInkBullet->mPaintSize);
+	mpBrushDynMaterial->SetScalarParameterValue(TEXT("BrushSize"), mPaintSize);
 	mpBrushDynMaterial->SetScalarParameterValue(TEXT("BrushStrength"), 1.0f);
 	
 	// Setup Brush Splash and Texture

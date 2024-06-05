@@ -52,6 +52,18 @@ void AInkBullets::DetectHitInSurface(FTransform aOverlappedActorTransform)
 		TEXT("Ink"),
 		traceCollisionParams
 	);
+
+	if (bulletHit.Num() < 1)
+	{
+		// Do another line trace looking down
+		GetWorld()->LineTraceMultiByProfile(
+			bulletHit,
+			GetLocation(),
+			GetLocation() - rotation * 30.0f,
+			TEXT("Ink"),
+			traceCollisionParams
+		);
+	}
 	PaintAtPosition(bulletHit);
 	Destroy();
 }
@@ -114,6 +126,7 @@ void AInkBullets::ServerOnOverlapBegin_Implementation(UPrimitiveComponent* newCo
 		
 		UGameplayStatics::ApplyDamage(inkPlayerCharacter, mDamage, nullptr, this, UDamageType::StaticClass());
 	}
+	Destroy();
 }
 
 void AInkBullets::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

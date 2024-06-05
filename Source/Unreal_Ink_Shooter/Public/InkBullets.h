@@ -33,7 +33,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FColor> mColorsToCheck;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float mPaintSize {0.1f};
+	float mPaintSize {1.0f};
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float mDamage {20.0f};
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated)

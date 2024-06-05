@@ -64,8 +64,11 @@ void AInkMeter::RPC_Server_CheckFinalInkFromLevelComponents_Implementation()
 void AInkMeter::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	RPC_Server_FindAllLevelComponents();
+	if (mpLevelComponents.Num() == 0)
+	{
+		RPC_Server_FindAllLevelComponents();
+	}
+	GetWorld()->GetTimerManager().SetTimer(MCheckTimerHandle, this, &AInkMeter::RPC_Server_CheckInkFromLevelComponents, 5, true);
 }
 
 void AInkMeter::RPC_Server_FindAllLevelComponents_Implementation()
@@ -77,6 +80,4 @@ void AInkMeter::RPC_Server_FindAllLevelComponents_Implementation()
 	{
 		mpLevelComponents.Add(Cast<ALevelComponents>(levelComponent));
 	}
-
-	GetWorld()->GetTimerManager().SetTimer(MCheckTimerHandle, this, &AInkMeter::RPC_Server_CheckInkFromLevelComponents, 5, true);
 }
