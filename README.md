@@ -13,5 +13,5 @@
 - Space bar: Jumps
 - Shift: Swims
 
-## In progress...
-Currently working on adding multiplayer
+## Multiplayer
+The game can be played with other players at the same network, it uses a lobby system.
