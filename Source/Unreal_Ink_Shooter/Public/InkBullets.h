@@ -27,6 +27,8 @@ public:
 	UProjectileMovementComponent* mpProjectileMovementComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UArrowComponent* mpArrowForward;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UArrowComponent* mpArrowDown;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	USphereComponent* mpCollisionSphere;
 

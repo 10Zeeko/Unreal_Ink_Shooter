@@ -15,6 +15,9 @@ AInkBullets::AInkBullets()
 	mpArrowForward = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowForward"));
 	mpArrowForward->SetupAttachment(RootComponent);
 
+	mpArrowDown = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowDown"));
+	mpArrowDown->SetupAttachment(mpArrowForward);
+
 	mpSphereComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InkBullets"));
 	mpSphereComponent->SetupAttachment(mpArrowForward);
 
@@ -55,11 +58,11 @@ void AInkBullets::DetectHitInSurface(FTransform aOverlappedActorTransform)
 
 	if (bulletHit.Num() < 1)
 	{
-		// Do another line trace looking down
+		rotation = mpArrowDown->GetForwardVector();
 		GetWorld()->LineTraceMultiByProfile(
 			bulletHit,
 			GetLocation(),
-			GetLocation() - rotation * 30.0f,
+			GetLocation() + rotation * 30.0f,
 			TEXT("Ink"),
 			traceCollisionParams
 		);
@@ -118,7 +121,8 @@ void AInkBullets::ServerOnOverlapBegin_Implementation(UPrimitiveComponent* newCo
 {
 	if (ALevelComponents* levelComponents = Cast<ALevelComponents>(OtherActor))
 	{
-		DetectHitInSurface(OtherActor->GetTransform());
+		auto OtherTrans {OtherActor->GetTransform()};
+		DetectHitInSurface(OtherTrans);
 	}
 	else if (AInkPlayerCharacter* inkPlayerCharacter = Cast<AInkPlayerCharacter>(OtherActor))
 	{
