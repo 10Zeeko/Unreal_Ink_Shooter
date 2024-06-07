@@ -70,7 +70,6 @@ void AWeapon::RPC_Server_PrepareForShooting_Implementation(UCameraComponent* aFo
 	FTransform ActorWorldTransform = GetActorTransform();
 	FVector WorldSpawnLocation = ActorWorldTransform.TransformPosition(mBulletSpawnPoint);
 	
-	// mInkBullet = GetWorld()->SpawnActor<AInkBullets>(mBulletBP, WorldSpawnLocation, NewRotation);
 	auto BulletTransform {FTransform(NewRotation, WorldSpawnLocation)};
 	mInkBullet = GetWorld()->SpawnActorDeferred<AInkBullets>(mBulletBP, BulletTransform);
 

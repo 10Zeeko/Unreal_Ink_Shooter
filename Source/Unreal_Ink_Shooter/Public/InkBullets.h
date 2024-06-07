@@ -70,6 +70,7 @@ public:
 	UFUNCTION()
 	void DestroyBullet();
 
+	UFUNCTION()
 	void UpdateColor();
 
 protected:
